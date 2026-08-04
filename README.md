@@ -4,7 +4,8 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 
 ## Regras de cálculo
 
-- Somente campanhas cujo nome contenha `SD | E2-CAP` entram no cruzamento.
+- A aba `Bubba` usa campanhas cujo nome contenha `SD | E2-CAP`.
+- A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP`.
 - Gasto usado em todas as métricas: `(Amount Spent × 1,1385) ÷ 5,10`, exibido em USD.
 - O período termina sempre em D−1 no fuso `America/Sao_Paulo` para respeitar o atraso das conversões.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
