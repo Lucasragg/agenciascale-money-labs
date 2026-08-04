@@ -8,7 +8,7 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cujo evento normalizado é exatamente `venda registrada`.
 - Campanha: `UTM Campaign`; anúncio: `UTM Content`; conjunto: lookup campanha+anúncio na aba Bubba.
-- Venda sem UTM: último lead anterior do mesmo e-mail, quando ele pertence a uma campanha presente na Bubba.
+- Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
 - Receita USD convertida para BRL pela taxa Frankfurter/ECB; fallback configurável por `USD_BRL_RATE`.
 - O arquivo público não contém nome, e-mail nem telefone.
 
