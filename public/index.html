@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Money Labs · Meta Ads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260804">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <div><strong>Money Labs</strong><small>Performance Intelligence</small></div>
+      </div>
+      <div class="live"><span></span> Dados em nuvem <b id="updatedAt">carregando…</b></div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow">META ADS · FUNIL DE AQUISIÇÃO</p><h1>Visão executiva de performance</h1><p>Da impressão à venda, com investimento já acrescido do imposto Meta.</p></div>
+        <div class="filters">
+          <div class="quick" id="quickFilters"><button data-days="7" class="active">7 dias</button><button data-days="14">14 dias</button><button data-days="30">30 dias</button><button data-days="all">Tudo</button></div>
+          <div class="dates"><label>De <input type="date" id="startDate"></label><span>→</span><label>Até <input type="date" id="endDate"></label></div>
+        </div>
+      </section>
+
+      <section class="notice"><span>i</span><p><b>Investimento líquido de imposto</b> Todos os custos usam gasto × <strong id="taxRate">1,1385</strong>. Receita USD convertida para BRL a <strong id="fxRate">—</strong>.</p></section>
+
+      <section class="metrics" id="metrics"></section>
+
+      <section class="grid-two">
+        <article class="panel funnel-panel"><div class="panel-head"><div><p class="eyebrow">CONVERSÃO</p><h2>Funil no período</h2></div><span id="periodLabel"></span></div><div id="funnel" class="funnel"></div></article>
+        <article class="panel chart-panel"><div class="panel-head"><div><p class="eyebrow">EVOLUÇÃO</p><h2>Performance por dia</h2></div><div class="legend"><span class="spend">Investimento</span><span class="leads">Leads</span><span class="sales">Vendas</span></div></div><div id="dailyChart" class="daily-chart"></div></article>
+      </section>
+
+      <section class="panel optimization">
+        <div class="panel-head table-head"><div><p class="eyebrow">DECISÃO DE MÍDIA</p><h2>Otimização por dimensão</h2></div><div class="tabs" id="tabs"><button data-level="campaign" class="active">Campanhas</button><button data-level="adset">Conjuntos</button><button data-level="ad">Anúncios</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Investimento</th><th>Cliques</th><th>Leads</th><th>CPL</th><th>Vendas</th><th>CAC</th><th>Receita</th><th>ROAS</th></tr></thead><tbody id="optimizationBody"></tbody></table></div>
+      </section>
+      <footer><span>Money Labs · Agência Scale</span><span id="coverage"></span></footer>
+    </main>
+  </div>
+  <div id="error" class="error" hidden></div>
+  <script src="app.js?v=20260804"></script>
+</body>
+</html>
