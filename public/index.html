@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260804d">
+  <link rel="stylesheet" href="styles.css?v=20260804e">
 </head>
 <body>
   <div class="shell">
@@ -23,7 +23,7 @@
 
     <main>
       <section class="hero">
-        <div><p class="eyebrow">META ADS · FUNIL DE AQUISIÇÃO</p><h1>Visão executiva de performance</h1><p>Da impressão à venda, com investimento já acrescido do imposto Meta.</p><nav class="view-tabs" id="viewTabs" aria-label="Visões da dashboard"><button class="active" data-view="Bubba">Bubba</button><button data-view="Mari">Mari</button><button data-view="Harumi">Harumi</button></nav></div>
+        <div><p class="eyebrow">META ADS · FUNIL DE AQUISIÇÃO</p><h1>Visão executiva de performance</h1><p>Da impressão à venda, com investimento já acrescido do imposto Meta.</p><nav class="view-tabs" id="viewTabs" aria-label="Visões da dashboard"><button class="active" data-view="Money Labs">Money Labs</button><button data-view="Bubba">Bubba</button><button data-view="Mari">Mari</button><button data-view="Harumi">Harumi</button></nav></div>
         <div class="filters">
           <div class="quick" id="quickFilters"><button data-days="7" class="active">7 dias</button><button data-days="14">14 dias</button><button data-days="30">30 dias</button><button data-days="all">Tudo</button></div>
           <div class="dates"><label>De <input type="date" id="startDate"></label><span>→</span><label>Até <input type="date" id="endDate"></label></div>
@@ -40,13 +40,13 @@
       </section>
 
       <section class="panel optimization">
-        <div class="panel-head table-head"><div><p class="eyebrow">DECISÃO DE MÍDIA</p><h2>Otimização por dimensão</h2></div><div class="tabs" id="tabs"><button data-level="campaign" class="active">Campanhas</button><button data-level="adset">Conjuntos</button><button data-level="ad">Anúncios</button></div></div>
+        <div class="panel-head table-head"><div><p class="eyebrow">DECISÃO DE MÍDIA</p><h2 id="optimizationTitle">Resultado por funil</h2></div><div class="tabs" id="tabs" hidden><button data-level="campaign" class="active">Campanhas</button><button data-level="adset">Conjuntos</button><button data-level="ad">Anúncios</button></div></div>
         <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Investimento</th><th>Cliques</th><th>Leads</th><th>CPL</th><th>Vendas</th><th>CAC</th></tr></thead><tbody id="optimizationBody"></tbody></table></div>
       </section>
       <footer><span>Money Labs · Agência Scale</span><span id="coverage"></span></footer>
     </main>
   </div>
   <div id="error" class="error" hidden></div>
-  <script src="app.js?v=20260804d"></script>
+  <script src="app.js?v=20260804e"></script>
 </body>
 </html>
