@@ -28,7 +28,10 @@ EVENTS_URL = (
 )
 TAX_MULTIPLIER = 1.1385
 BRL_PER_USD = 5.10
-CAMPAIGN_FILTER = "sd | e2-cap"
+CAMPAIGN_VIEWS = {
+    "Bubba": "sd | e2-cap",
+    "Mari": "mari | e2-cap",
+}
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -102,7 +105,7 @@ def main() -> None:
 
     cutoff_date = (datetime.now(ZoneInfo("America/Sao_Paulo")).date() - timedelta(days=1)).isoformat()
     ads: list[dict[str, object]] = []
-    campaign_names: dict[str, str] = {}
+    campaign_names: dict[str, tuple[str, str]] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
     adsets_by_campaign: dict[str, set[str]] = defaultdict(set)
     for row in ads_source:
@@ -110,10 +113,13 @@ def main() -> None:
         campaign = get(row, "Campaign Name", "Campanha")
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
-        if not date or not campaign or date > cutoff_date or CAMPAIGN_FILTER not in norm(campaign):
+        campaign_key = norm(campaign)
+        view = next((name for name, marker in CAMPAIGN_VIEWS.items() if marker in campaign_key), None)
+        if not date or not campaign or date > cutoff_date or not view:
             continue
         item = {
             "date": date,
+            "view": view,
             "campaign": campaign,
             "adset": adset or "Sem conjunto",
             "ad": ad or "Sem anúncio",
@@ -124,11 +130,11 @@ def main() -> None:
         }
         ads.append(item)
         ckey, akey = norm(campaign), norm(ad)
-        campaign_names[ckey] = campaign
+        campaign_names[ckey] = (view, campaign)
         adset_by_campaign_ad[(ckey, akey)].add(item["adset"])
         adsets_by_campaign[ckey].add(item["adset"])
 
-    def resolve_utm(campaign: str, ad: str) -> tuple[str, str, str] | None:
+    def resolve_utm(campaign: str, ad: str) -> tuple[str, str, str, str] | None:
         ckey, akey = norm(campaign), norm(ad)
         if ckey not in campaign_names:
             return None
@@ -136,7 +142,8 @@ def main() -> None:
         if not sets and len(adsets_by_campaign[ckey]) == 1:
             sets = adsets_by_campaign[ckey]
         adset = next(iter(sets)) if len(sets) == 1 else "Não atribuído"
-        return campaign_names[ckey], adset, ad.strip() or "Não atribuído"
+        view, campaign_name = campaign_names[ckey]
+        return view, campaign_name, adset, ad.strip() or "Não atribuído"
 
     prepared: list[dict[str, object]] = []
     source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0}
@@ -155,9 +162,10 @@ def main() -> None:
         resolved = resolve_utm(campaign, ad)
         if not resolved:
             continue
-        campaign, adset, ad = resolved
+        view, campaign, adset, ad = resolved
         prepared.append({
             "date": date,
+            "view": view,
             "type": kind,
             "campaign": campaign,
             "adset": adset,
@@ -171,7 +179,8 @@ def main() -> None:
         "taxMultiplier": TAX_MULTIPLIER,
         "currency": "USD",
         "brlPerUsd": BRL_PER_USD,
-        "campaignFilter": "SD | E2-CAP",
+        "views": list(CAMPAIGN_VIEWS),
+        "campaignFilters": {"Bubba": "SD | E2-CAP", "Mari": "MARI | E2-CAP"},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads)},
