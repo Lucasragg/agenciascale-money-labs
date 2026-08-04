@@ -6,14 +6,14 @@ from __future__ import annotations
 import csv
 import io
 import json
-import os
 import re
 import time
 import unicodedata
 import urllib.request
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 ADS_URL = (
@@ -26,8 +26,9 @@ EVENTS_URL = (
     "1DmGXEvfbS1_324K3PIadyP3kv1tBDqkC6NaCWw_2KfE/export"
     "?format=csv&gid=0"
 )
-FX_URL = "https://api.frankfurter.app/latest?from=USD&to=BRL"
 TAX_MULTIPLIER = 1.1385
+BRL_PER_USD = 5.10
+CAMPAIGN_FILTER = "sd | e2-cap"
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -90,16 +91,6 @@ def get(row: dict[str, str], *names: str) -> str:
     return ""
 
 
-def usd_brl_rate() -> tuple[float, str]:
-    fallback = parse_number(os.getenv("USD_BRL_RATE", "5.50")) or 5.50
-    try:
-        payload = json.loads(fetch(FX_URL, attempts=2).decode("utf-8"))
-        rate = float(payload["rates"]["BRL"])
-        return rate, str(payload.get("date") or "latest")
-    except Exception:
-        return fallback, "fallback"
-
-
 def main() -> None:
     ads_source = decode_csv(fetch(ADS_URL))
     events_source = decode_csv(fetch(EVENTS_URL))
@@ -109,6 +100,7 @@ def main() -> None:
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
         raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
 
+    cutoff_date = (datetime.now(ZoneInfo("America/Sao_Paulo")).date() - timedelta(days=1)).isoformat()
     ads: list[dict[str, object]] = []
     campaign_names: dict[str, str] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
@@ -118,14 +110,14 @@ def main() -> None:
         campaign = get(row, "Campaign Name", "Campanha")
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
-        if not date or not campaign:
+        if not date or not campaign or date > cutoff_date or CAMPAIGN_FILTER not in norm(campaign):
             continue
         item = {
             "date": date,
             "campaign": campaign,
             "adset": adset or "Sem conjunto",
             "ad": ad or "Sem anúncio",
-            "spend": round(parse_number(get(row, "Amount Spent", "Valor gasto")) * TAX_MULTIPLIER, 4),
+            "spend": round(parse_number(get(row, "Amount Spent", "Valor gasto")) * TAX_MULTIPLIER / BRL_PER_USD, 4),
             "impressions": int(parse_number(get(row, "Impressions", "Impressões"))),
             "clicks": int(parse_number(get(row, "Link Clicks", "Cliques no link"))),
             "pageViews": int(parse_number(get(row, "Landing Page Views", "Visualizações da página de destino"))),
@@ -156,7 +148,7 @@ def main() -> None:
         kind = "lead" if event == "lead salvo" else "sale"
         source_counts["leadRows" if kind == "lead" else "saleRows"] += 1
         date = parse_date(get(row, "Data/hora (Brasília)"))
-        if not date:
+        if not date or date > cutoff_date:
             continue
         campaign = get(row, "UTM Campaign")
         ad = get(row, "UTM Content")
@@ -170,20 +162,17 @@ def main() -> None:
             "campaign": campaign,
             "adset": adset,
             "ad": ad,
-            "valueUsd": round(parse_number(get(row, "Valor de conversão")), 4) if kind == "sale" else 0,
         })
         source_counts["matchedLeads" if kind == "lead" else "matchedSales"] += 1
-
-    rate, rate_date = usd_brl_rate()
-    for event in prepared:
-        event["valueBrl"] = round(float(event.pop("valueUsd")) * rate, 4)
 
     dates = [str(row["date"]) for row in ads] + [str(row["date"]) for row in prepared]
     output = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "taxMultiplier": TAX_MULTIPLIER,
-        "currency": "BRL",
-        "fx": {"usdBrl": rate, "date": rate_date, "source": "Frankfurter/ECB" if rate_date != "fallback" else "fallback"},
+        "currency": "USD",
+        "brlPerUsd": BRL_PER_USD,
+        "campaignFilter": "SD | E2-CAP",
+        "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads)},
         "ads": ads,
