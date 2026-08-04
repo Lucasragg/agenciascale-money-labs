@@ -1,0 +1,50 @@
+const state={data:null,start:null,end:null,level:'campaign'};
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const num=(n,d=0)=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:d,minimumFractionDigits:d}).format(Number(n)||0);
+const money=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:2}).format(Number(n)||0);
+const pct=n=>`${num((Number(n)||0)*100,2)}%`;const ratio=(a,b)=>b?a/b:0;
+const dateBR=s=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'short',timeZone:'UTC'}).format(new Date(`${s}T00:00:00Z`));
+const shift=(iso,days)=>{const d=new Date(`${iso}T00:00:00Z`);d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
+const inRange=(d,a,b)=>d>=a&&d<=b;
+
+function aggregate(start,end,group){
+  const map=new Map(); const blank=()=>({spend:0,impressions:0,clicks:0,pageViews:0,leads:0,sales:0,revenue:0});
+  const keyOf=x=>group==='campaign'?x.campaign:group==='adset'?`${x.campaign} › ${x.adset}`:`${x.campaign} › ${x.adset} › ${x.ad}`;
+  const take=key=>{if(!map.has(key))map.set(key,blank());return map.get(key)};
+  state.data.ads.filter(x=>inRange(x.date,start,end)).forEach(x=>{const v=take(group?keyOf(x):'_');v.spend+=x.spend;v.impressions+=x.impressions;v.clicks+=x.clicks;v.pageViews+=x.pageViews});
+  state.data.events.filter(x=>inRange(x.date,start,end)).forEach(x=>{const v=take(group?keyOf(x):'_');if(x.type==='lead')v.leads++;else{v.sales++;v.revenue+=x.valueBrl||0}});
+  if(group)return [...map].map(([name,v])=>({name,...v}));return map.get('_')||blank();
+}
+
+function previousRange(){const days=Math.round((new Date(state.end)-new Date(state.start))/864e5)+1;return{start:shift(state.start,-days),end:shift(state.start,-1)}}
+function delta(current,previous,inverse=false){if(!previous)return{label:'—',cls:''};const raw=(current-previous)/Math.abs(previous);const good=inverse?raw<0:raw>0;return{label:`${raw>=0?'↑':'↓'} ${num(Math.abs(raw)*100,1)}%`,cls:good?'up':'down'}}
+
+function renderMetrics(){
+  const c=aggregate(state.start,state.end),pr=previousRange(),p=aggregate(pr.start,pr.end);
+  const defs=[
+    ['Investimento',c.spend,p.spend,money,'Gasto com imposto','R$',false],['Impressões',c.impressions,p.impressions,n=>num(n),'Entrega','◎',false],
+    ['Cliques',c.clicks,p.clicks,n=>num(n),`${num(c.pageViews)} page views`,'↗',false],['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
+    ['Vendas',c.sales,p.sales,n=>num(n),`${money(c.revenue)} em receita`,'✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
+    ['CTR',ratio(c.clicks,c.impressions),ratio(p.clicks,p.impressions),pct,'Clique / impressão','%',false],['CPC',ratio(c.spend,c.clicks),ratio(p.spend,p.clicks),money,'Custo por clique','C',true],
+    ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Custo por venda','A',true],
+    ['Conversão',ratio(c.sales,c.leads),ratio(p.sales,p.leads),pct,'Venda / lead','↯',false],['ROAS',ratio(c.revenue,c.spend),ratio(p.revenue,p.spend),n=>`${num(n,2)}x`,'Receita BRL / gasto','R',false]
+  ];
+  const colors=['#4f8cff','#8b5cf6','#2dd4bf','#34d399','#fb923c','#4f8cff','#8b5cf6','#2dd4bf','#34d399','#fb7185','#facc15','#a78bfa'];
+  $('#metrics').innerHTML=defs.map((m,i)=>{const d=delta(m[1],m[2],m[6]);return `<article class="metric" style="--accent:${colors[i]}"><div class="metric-label"><span>${m[0]}</span><i class="metric-icon">${m[5]}</i></div><div class="metric-value">${m[3](m[1])}</div><div class="metric-foot"><span>${m[4]}</span><span class="delta ${d.cls}">${d.label} vs anterior</span></div></article>`}).join('');
+}
+
+function renderFunnel(){const v=aggregate(state.start,state.end);const rows=[['Investimento',money(v.spend),100,'Base','#4f8cff','#6ea2ff'],['Impressões',num(v.impressions),100,'Entrega','#675cff','#8b5cf6'],['Cliques',num(v.clicks),ratio(v.clicks,v.impressions)*100,`${pct(ratio(v.clicks,v.impressions))} CTR`,'#8b5cf6','#a78bfa'],['Leads',num(v.leads),ratio(v.leads,v.clicks)*100,`${pct(ratio(v.leads,v.clicks))} clique → lead`,'#2dd4bf','#34d399'],['Vendas',num(v.sales),ratio(v.sales,v.leads)*100,`${pct(ratio(v.sales,v.leads))} lead → venda`,'#f59e0b','#fb923c']];
+  $('#funnel').innerHTML=rows.map((r,i)=>{const width=i<2?100:Math.max(2,Math.min(100,r[2]));return `<div class="funnel-row"><div class="funnel-label"><strong>${r[0]}</strong><small>${i?`Etapa ${i+1}`:'Base de mídia'}</small></div><div class="funnel-track"><div class="funnel-fill" style="width:${width}%;--c1:${r[4]};--c2:${r[5]}">${r[1]}</div></div><div class="funnel-rate">${r[3]}</div></div>`}).join('');
+}
+
+function dailyData(){const map=new Map();for(let d=state.start;d<=state.end;d=shift(d,1))map.set(d,{date:d,spend:0,leads:0,sales:0});state.data.ads.filter(x=>map.has(x.date)).forEach(x=>map.get(x.date).spend+=x.spend);state.data.events.filter(x=>map.has(x.date)).forEach(x=>{const v=map.get(x.date);v[x.type==='lead'?'leads':'sales']++});return [...map.values()]}
+function renderChart(){const data=dailyData(),el=$('#dailyChart');if(!data.length){el.innerHTML='<p class="empty">Sem dados no período.</p>';return}const W=760,H=240,p={l:44,r:18,t:14,b:32},iw=W-p.l-p.r,ih=H-p.t-p.b;const maxSpend=Math.max(...data.map(x=>x.spend),1),maxCount=Math.max(...data.flatMap(x=>[x.leads,x.sales]),1);const x=i=>p.l+(data.length===1?iw/2:i*iw/(data.length-1)),ys=v=>p.t+ih-(v/maxSpend)*ih,yc=v=>p.t+ih-(v/maxCount)*ih;const path=(key,y)=>data.map((d,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(' ');const labels=data.map((d,i)=>i%Math.ceil(data.length/7)===0||i===data.length-1?`<text class="axis-label" x="${x(i)}" y="${H-8}" text-anchor="middle">${dateBR(d.date)}</text>`:'').join('');const grid=[0,.25,.5,.75,1].map(t=>`<line class="grid-line" x1="${p.l}" y1="${p.t+ih*t}" x2="${W-p.r}" y2="${p.t+ih*t}"/><text class="axis-label" x="${p.l-7}" y="${p.t+ih*t+3}" text-anchor="end">${money(maxSpend*(1-t)).replace(/\s/g,'')}</text>`).join('');el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico diário">${grid}${labels}<path class="area" fill="#4f8cff" d="${path('spend',ys)} L${x(data.length-1)},${p.t+ih} L${x(0)},${p.t+ih}Z"/><path class="line" stroke="#4f8cff" d="${path('spend',ys)}"/><path class="line" stroke="#2dd4bf" d="${path('leads',yc)}"/><path class="line" stroke="#fb923c" d="${path('sales',yc)}"/>${data.map((d,i)=>`<circle class="dot" fill="#2dd4bf" cx="${x(i)}" cy="${yc(d.leads)}" r="3"/><circle class="dot" fill="#fb923c" cx="${x(i)}" cy="${yc(d.sales)}" r="3"/>`).join('')}</svg>`}
+
+function renderTable(){const rows=aggregate(state.start,state.end,state.level).sort((a,b)=>{const ac=a.sales?ratio(a.spend,a.sales):Infinity,bc=b.sales?ratio(b.spend,b.sales):Infinity;return ac-bc||b.leads-a.leads});$('#optimizationBody').innerHTML=rows.length?rows.map(x=>`<tr><td title="${escapeHtml(x.name)}">${escapeHtml(x.name)}</td><td>${money(x.spend)}</td><td>${num(x.clicks)}</td><td>${num(x.leads)}</td><td>${x.leads?money(x.spend/x.leads):'—'}</td><td>${num(x.sales)}</td><td>${x.sales?money(x.spend/x.sales):'—'}</td><td>${money(x.revenue)}</td><td><span class="pill">${x.spend?num(x.revenue/x.spend,2)+'x':'—'}</span></td></tr>`).join(''):'<tr><td colspan="9" class="empty">Sem dados atribuídos no período.</td></tr>'}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){renderMetrics();renderFunnel();renderChart();renderTable();$('#periodLabel').textContent=`${dateBR(state.start)} — ${dateBR(state.end)}`}
+function setPeriod(days){const max=state.data.range.max,min=state.data.range.min;state.end=max;state.start=days==='all'?min:[shift(max,-Number(days)+1),min].sort().at(-1);$('#startDate').value=state.start;$('#endDate').value=state.end;render()}
+
+async function init(){try{const res=await fetch(`data.json?v=${Date.now()}`,{cache:'no-store'});if(!res.ok)throw new Error(`HTTP ${res.status}`);state.data=await res.json();$('#updatedAt').textContent=new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short',timeZone:'America/Sao_Paulo'}).format(new Date(state.data.generatedAt));$('#taxRate').textContent=num(state.data.taxMultiplier,4);$('#fxRate').textContent=`R$ ${num(state.data.fx.usdBrl,4)} (${state.data.fx.date})`;const c=state.data.sourceCounts;$('#coverage').textContent=`${num(c.adRows)} linhas de mídia · ${num(c.matchedLeads)} leads · ${num(c.matchedSales)} vendas atribuídas`;setPeriod(7);
+  $('#quickFilters').addEventListener('click',e=>{if(!e.target.dataset.days)return;$$('#quickFilters button').forEach(x=>x.classList.toggle('active',x===e.target));setPeriod(e.target.dataset.days)});['startDate','endDate'].forEach(id=>$('#'+id).addEventListener('change',()=>{state.start=$('#startDate').value;state.end=$('#endDate').value;if(state.start>state.end)[state.start,state.end]=[state.end,state.start];$$('#quickFilters button').forEach(x=>x.classList.remove('active'));render()}));$('#tabs').addEventListener('click',e=>{if(!e.target.dataset.level)return;state.level=e.target.dataset.level;$$('#tabs button').forEach(x=>x.classList.toggle('active',x===e.target));renderTable()});
+}catch(err){$('#error').hidden=false;$('#error').textContent=`Não foi possível carregar os dados: ${err.message}`;console.error(err)}}init();
