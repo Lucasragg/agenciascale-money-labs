@@ -4,12 +4,14 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 
 ## Regras de cálculo
 
-- Gasto usado em todas as métricas: `Amount Spent × 1,1385`.
+- Somente campanhas cujo nome contenha `SD | E2-CAP` entram no cruzamento.
+- Gasto usado em todas as métricas: `(Amount Spent × 1,1385) ÷ 5,10`, exibido em USD.
+- O período termina sempre em D−1 no fuso `America/Sao_Paulo` para respeitar o atraso das conversões.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cujo evento normalizado é exatamente `venda registrada`.
 - Campanha: `UTM Campaign`; anúncio: `UTM Content`; conjunto: lookup campanha+anúncio na aba Bubba.
 - Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
-- Receita USD convertida para BRL pela taxa Frankfurter/ECB; fallback configurável por `USD_BRL_RATE`.
+- Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
 
 ## Automação
