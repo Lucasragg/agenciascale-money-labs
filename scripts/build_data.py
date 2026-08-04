@@ -31,6 +31,7 @@ BRL_PER_USD = 5.10
 CAMPAIGN_VIEWS = {
     "Bubba": "sd | e2-cap",
     "Mari": "mari | e2-cap",
+    "Harumi": "harumi | e2-cap",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -180,7 +181,7 @@ def main() -> None:
         "currency": "USD",
         "brlPerUsd": BRL_PER_USD,
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": "SD | E2-CAP", "Mari": "MARI | E2-CAP"},
+        "campaignFilters": {"Bubba": "SD | E2-CAP", "Mari": "MARI | E2-CAP", "Harumi": "Harumi | E2-CAP"},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads)},
