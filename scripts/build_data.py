@@ -146,8 +146,6 @@ def main() -> None:
         adset = next(iter(sets)) if len(sets) == 1 else "Não atribuído"
         return campaign_names[ckey], adset, ad.strip() or "Não atribuído"
 
-    # Keep email only in memory to backfill a sale from its preceding lead; it is never serialized.
-    lead_touch_by_email: dict[str, tuple[str, str, str]] = {}
     prepared: list[dict[str, object]] = []
     source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0}
     sorted_events = sorted(events_source, key=lambda r: parse_date(get(r, "Data/hora (Brasília)")) or "")
@@ -163,11 +161,6 @@ def main() -> None:
         campaign = get(row, "UTM Campaign")
         ad = get(row, "UTM Content")
         resolved = resolve_utm(campaign, ad)
-        email_key = norm(get(row, "Email"))
-        if kind == "lead" and resolved and email_key:
-            lead_touch_by_email[email_key] = resolved
-        if not resolved and kind == "sale" and email_key:
-            resolved = lead_touch_by_email.get(email_key)
         if not resolved:
             continue
         campaign, adset, ad = resolved
