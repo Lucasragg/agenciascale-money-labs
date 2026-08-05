@@ -11,7 +11,7 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 - A aba `Alice` usa campanhas cujo nome contenha `Alice | E2-CAP`.
 - A aba `Money Labs` consolida os três funis e apresenta a tabela de decisão agrupada por funil.
 - Gasto usado em todas as métricas: `(Amount Spent × 1,1385) ÷ 5,10`, exibido em USD.
-- O período termina sempre em D−1 no fuso `America/Sao_Paulo` para respeitar o atraso das conversões.
+- O período inclui o dia atual no fuso `America/Sao_Paulo`.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cujo evento é `venda registrada` e cuja etapa, na mesma linha, é `validação de plano`.
 - Campanha: `UTM Campaign`; anúncio: `UTM Content`; conjunto: lookup campanha+anúncio na aba Bubba.
