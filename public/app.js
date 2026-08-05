@@ -25,7 +25,7 @@ function renderMetrics(){
   const defs=[
     ['Investimento',c.spend,p.spend,money,'Gasto com imposto','$',false],['Impressões',c.impressions,p.impressions,n=>num(n),'Entrega','◎',false],
     ['Cliques',c.clicks,p.clicks,n=>num(n),`${num(c.pageViews)} page views`,'↗',false],['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
-    ['Vendas',c.sales,p.sales,n=>num(n),'Evento: venda registrada','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
+    ['Vendas',c.sales,p.sales,n=>num(n),'Venda + validação de plano','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
     ['CTR',ratio(c.clicks,c.impressions),ratio(p.clicks,p.impressions),pct,'Clique / impressão','%',false],['CPC',ratio(c.spend,c.clicks),ratio(p.spend,p.clicks),money,'Custo por clique','C',true],
     ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Custo por venda','A',true],
     ['Conversão',ratio(c.sales,c.leads),ratio(p.sales,p.leads),pct,'Venda / lead','↯',false]
