@@ -24,17 +24,19 @@ function renderMetrics(){
   const c=aggregate(state.start,state.end),pr=previousRange(),p=aggregate(pr.start,pr.end);
   const defs=[
     ['Investimento',c.spend,p.spend,money,'Gasto com imposto','$',false],['Impressões',c.impressions,p.impressions,n=>num(n),'Entrega','◎',false],
-    ['Cliques',c.clicks,p.clicks,n=>num(n),`${num(c.pageViews)} page views`,'↗',false],['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
+    ['Cliques',c.clicks,p.clicks,n=>num(n),'Cliques no anúncio','↗',false],['Landing page views',c.pageViews,p.pageViews,n=>num(n),'Páginas carregadas','◉',false],
+    ['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
     ['Vendas',c.sales,p.sales,n=>num(n),'Venda + validação de plano','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
     ['CTR',ratio(c.clicks,c.impressions),ratio(p.clicks,p.impressions),pct,'Clique / impressão','%',false],['CPC',ratio(c.spend,c.clicks),ratio(p.spend,p.clicks),money,'Custo por clique','C',true],
+    ['Connect rate',ratio(c.pageViews,c.clicks),ratio(p.pageViews,p.clicks),pct,'Page view / clique','↳',false],['Conversão LP → Lead',ratio(c.leads,c.pageViews),ratio(p.leads,p.pageViews),pct,'Lead / page view','L%',false],
     ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Custo por venda','A',true],
-    ['Conversão',ratio(c.sales,c.leads),ratio(p.sales,p.leads),pct,'Venda / lead','↯',false]
+    ['Conversão em vendas',ratio(c.sales,c.leads),ratio(p.sales,p.leads),pct,'Venda / lead','↯',false]
   ];
-  const colors=['#4f8cff','#8b5cf6','#2dd4bf','#34d399','#fb923c','#4f8cff','#8b5cf6','#2dd4bf','#34d399','#fb7185','#facc15','#a78bfa'];
+  const colors=['#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#fb923c','#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#facc15','#fb7185','#a78bfa'];
   $('#metrics').innerHTML=defs.map((m,i)=>{const d=delta(m[1],m[2],m[6]);return `<article class="metric" style="--accent:${colors[i]}"><div class="metric-label"><span>${m[0]}</span><i class="metric-icon">${m[5]}</i></div><div class="metric-value">${m[3](m[1])}</div><div class="metric-foot"><span>${m[4]}</span><span class="delta ${d.cls}">${d.label} vs anterior</span></div></article>`}).join('');
 }
 
-function renderFunnel(){const v=aggregate(state.start,state.end);const rows=[['Investimento',money(v.spend),100,'Base','#4f8cff','#6ea2ff'],['Impressões',num(v.impressions),100,'Entrega','#675cff','#8b5cf6'],['Cliques',num(v.clicks),ratio(v.clicks,v.impressions)*100,`${pct(ratio(v.clicks,v.impressions))} CTR`,'#8b5cf6','#a78bfa'],['Leads',num(v.leads),ratio(v.leads,v.clicks)*100,`${pct(ratio(v.leads,v.clicks))} clique → lead`,'#2dd4bf','#34d399'],['Vendas',num(v.sales),ratio(v.sales,v.leads)*100,`${pct(ratio(v.sales,v.leads))} lead → venda`,'#f59e0b','#fb923c']];
+function renderFunnel(){const v=aggregate(state.start,state.end);const rows=[['Investimento',money(v.spend),100,'Base','#4f8cff','#6ea2ff'],['Impressões',num(v.impressions),100,'Entrega','#675cff','#8b5cf6'],['Cliques',num(v.clicks),ratio(v.clicks,v.impressions)*100,`${pct(ratio(v.clicks,v.impressions))} CTR`,'#8b5cf6','#a78bfa'],['Landing page views',num(v.pageViews),ratio(v.pageViews,v.clicks)*100,`${pct(ratio(v.pageViews,v.clicks))} connect rate`,'#22c5d6','#2dd4bf'],['Leads',num(v.leads),ratio(v.leads,v.pageViews)*100,`${pct(ratio(v.leads,v.pageViews))} LP → lead`,'#2dd4bf','#34d399'],['Vendas',num(v.sales),ratio(v.sales,v.leads)*100,`${pct(ratio(v.sales,v.leads))} lead → venda`,'#f59e0b','#fb923c']];
   $('#funnel').innerHTML=rows.map((r,i)=>{const width=i<2?100:Math.max(2,Math.min(100,r[2]));return `<div class="funnel-row"><div class="funnel-label"><strong>${r[0]}</strong><small>${i?`Etapa ${i+1}`:'Base de mídia'}</small></div><div class="funnel-track"><div class="funnel-fill" style="width:${width}%;--c1:${r[4]};--c2:${r[5]}">${r[1]}</div></div><div class="funnel-rate">${r[3]}</div></div>`}).join('');
 }
 
