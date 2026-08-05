@@ -153,6 +153,8 @@ def main() -> None:
         event = norm(get(row, "Evento"))
         if event not in {"lead salvo", "venda registrada"}:
             continue
+        if event == "venda registrada" and norm(get(row, "Etapa")) != "validacao de plano":
+            continue
         kind = "lead" if event == "lead salvo" else "sale"
         source_counts["leadRows" if kind == "lead" else "saleRows"] += 1
         date = parse_date(get(row, "Data/hora (Brasília)"))
