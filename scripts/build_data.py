@@ -11,7 +11,7 @@ import time
 import unicodedata
 import urllib.request
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -106,7 +106,7 @@ def main() -> None:
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
         raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
 
-    cutoff_date = (datetime.now(ZoneInfo("America/Sao_Paulo")).date() - timedelta(days=1)).isoformat()
+    cutoff_date = datetime.now(ZoneInfo("America/Sao_Paulo")).date().isoformat()
     ads: list[dict[str, object]] = []
     campaign_names: dict[str, tuple[str, str]] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
