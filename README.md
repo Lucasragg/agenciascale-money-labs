@@ -4,7 +4,7 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 
 ## Regras de cálculo
 
-- A aba `Bubba` usa campanhas cujo nome contenha `SD | E2-CAP`.
+- A aba `Bubba` usa campanhas cujo nome contenha `SD | E2-CAP`, `BUBA-ING | E2-CAP` ou `BUBBA | E2-CAP`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP`.
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
 - A aba `Lucas` usa campanhas cujo nome contenha `Lucas | E2-CAP`.
