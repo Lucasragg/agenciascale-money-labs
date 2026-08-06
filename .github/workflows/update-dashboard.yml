@@ -14,14 +14,11 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.deployment_retry_2.outputs.page_url }}
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
@@ -37,22 +34,41 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
-      - name: Publicar — tentativa 1
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
+
+  deploy_retry:
+    needs: [build, deploy]
+    if: ${{ always() && needs.build.result == 'success' && needs.deploy.result != 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Aguardar liberação do Pages
-        if: ${{ steps.deployment.outcome == 'failure' }}
         run: sleep 120
-      - name: Publicar — tentativa 2
-        id: deployment_retry
-        if: ${{ steps.deployment.outcome == 'failure' }}
+      - name: Republicar
+        id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
+
+  deploy_retry_2:
+    needs: [build, deploy, deploy_retry]
+    if: ${{ always() && needs.build.result == 'success' && needs.deploy.result != 'success' && needs.deploy_retry.result != 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Aguardar nova liberação do Pages
-        if: ${{ steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure' }}
         run: sleep 120
-      - name: Publicar — tentativa 3
-        id: deployment_retry_2
-        if: ${{ steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure' }}
+      - name: Republicar novamente
+        id: deployment
         uses: actions/deploy-pages@v4
