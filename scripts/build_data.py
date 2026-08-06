@@ -26,8 +26,9 @@ EVENTS_URL = (
     "1DmGXEvfbS1_324K3PIadyP3kv1tBDqkC6NaCWw_2KfE/export"
     "?format=csv&gid=0"
 )
-TAX_MULTIPLIER = 1.1385
+TAX_MULTIPLIER = 1.0
 BRL_PER_USD = 5.10
+NATIVE_USD_MARKERS = ("buba-ing | e2-cap", "bubba | e2-cap")
 CAMPAIGN_VIEWS = {
     "Bubba": ("sd | e2-cap", "buba-ing | e2-cap", "bubba | e2-cap"),
     "Mari": ("mari | e2-cap",),
@@ -120,13 +121,17 @@ def main() -> None:
         view = next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
         if not date or not campaign or date > cutoff_date or not view:
             continue
+        source_currency = "USD" if any(marker in campaign_key for marker in NATIVE_USD_MARKERS) else "BRL"
+        raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
+        spend_usd = raw_spend if source_currency == "USD" else raw_spend / BRL_PER_USD
         item = {
             "date": date,
             "view": view,
             "campaign": campaign,
             "adset": adset or "Sem conjunto",
             "ad": ad or "Sem anúncio",
-            "spend": round(parse_number(get(row, "Amount Spent", "Valor gasto")) * TAX_MULTIPLIER / BRL_PER_USD, 4),
+            "spend": round(spend_usd, 4),
+            "sourceCurrency": source_currency,
             "impressions": int(parse_number(get(row, "Impressions", "Impressões"))),
             "clicks": int(parse_number(get(row, "Link Clicks", "Cliques no link"))),
             "pageViews": int(parse_number(get(row, "Landing Page Views", "Visualizações da página de destino"))),
@@ -182,8 +187,10 @@ def main() -> None:
     output = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "taxMultiplier": TAX_MULTIPLIER,
+        "taxApplied": False,
         "currency": "USD",
         "brlPerUsd": BRL_PER_USD,
+        "nativeUsdFilters": ["BUBA-ING | E2-CAP", "BUBBA | E2-CAP"],
         "views": list(CAMPAIGN_VIEWS),
         "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBA-ING | E2-CAP", "BUBBA | E2-CAP"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP"], "Alice": ["Alice | E2-CAP"]},
         "cutoffDate": cutoff_date,
