@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.deployment_retry_2.outputs.page_url }}
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
@@ -37,8 +37,22 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
-      - name: Publicar
+      - name: Publicar — tentativa 1
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          timeout: 1800000
+        continue-on-error: true
+      - name: Aguardar liberação do Pages
+        if: ${{ steps.deployment.outcome == 'failure' }}
+        run: sleep 120
+      - name: Publicar — tentativa 2
+        id: deployment_retry
+        if: ${{ steps.deployment.outcome == 'failure' }}
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Aguardar nova liberação do Pages
+        if: ${{ steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure' }}
+        run: sleep 120
+      - name: Publicar — tentativa 3
+        id: deployment_retry_2
+        if: ${{ steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure' }}
+        uses: actions/deploy-pages@v4
