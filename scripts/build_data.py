@@ -16,10 +16,21 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
-ADS_URL = (
-    "https://docs.google.com/spreadsheets/d/"
-    "1f4gIgN-Z6RMKYJpejrnAW7JVOVI_Hvm_KJzuGYWinSo/gviz/tq"
-    "?tqx=out:csv&sheet=Bubba"
+ADS_SOURCES = (
+    (
+        "Bubba",
+        "BRL",
+        "https://docs.google.com/spreadsheets/d/"
+        "1f4gIgN-Z6RMKYJpejrnAW7JVOVI_Hvm_KJzuGYWinSo/gviz/tq"
+        "?tqx=out:csv&sheet=Bubba",
+    ),
+    (
+        "MoneyLabs Dolar",
+        "USD",
+        "https://docs.google.com/spreadsheets/d/"
+        "1f4gIgN-Z6RMKYJpejrnAW7JVOVI_Hvm_KJzuGYWinSo/gviz/tq"
+        "?tqx=out:csv&gid=1446765993",
+    ),
 )
 EVENTS_URL = (
     "https://docs.google.com/spreadsheets/d/"
@@ -28,7 +39,6 @@ EVENTS_URL = (
 )
 TAX_MULTIPLIER = 1.0
 BRL_PER_USD = 5.10
-NATIVE_USD_MARKERS = ("buba-ing | e2-cap", "bubba | e2-cap")
 CAMPAIGN_VIEWS = {
     "Bubba": ("sd | e2-cap", "buba-ing | e2-cap", "bubba | e2-cap"),
     "Mari": ("mari | e2-cap",),
@@ -99,9 +109,10 @@ def get(row: dict[str, str], *names: str) -> str:
 
 
 def main() -> None:
-    ads_source = decode_csv(fetch(ADS_URL))
+    ads_sources = [(name, currency, decode_csv(fetch(url))) for name, currency, url in ADS_SOURCES]
+    ads_source = [(row, name, currency) for name, currency, rows in ads_sources for row in rows]
     events_source = decode_csv(fetch(EVENTS_URL))
-    if not ads_source or not events_source:
+    if any(not rows for _, _, rows in ads_sources) or not events_source:
         raise RuntimeError("Uma das planilhas não retornou linhas de dados.")
     required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "UTM Campaign", "UTM Content")}
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
@@ -112,7 +123,7 @@ def main() -> None:
     campaign_names: dict[str, tuple[str, str]] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
     adsets_by_campaign: dict[str, set[str]] = defaultdict(set)
-    for row in ads_source:
+    for row, source_tab, source_currency in ads_source:
         date = parse_date(get(row, "Day", "Dia", "Date"))
         campaign = get(row, "Campaign Name", "Campanha")
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
@@ -121,7 +132,6 @@ def main() -> None:
         view = next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
         if not date or not campaign or date > cutoff_date or not view:
             continue
-        source_currency = "USD" if any(marker in campaign_key for marker in NATIVE_USD_MARKERS) else "BRL"
         raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
         spend_usd = raw_spend if source_currency == "USD" else raw_spend / BRL_PER_USD
         item = {
@@ -132,6 +142,7 @@ def main() -> None:
             "ad": ad or "Sem anúncio",
             "spend": round(spend_usd, 4),
             "sourceCurrency": source_currency,
+            "sourceTab": source_tab,
             "impressions": int(parse_number(get(row, "Impressions", "Impressões"))),
             "clicks": int(parse_number(get(row, "Link Clicks", "Cliques no link"))),
             "pageViews": int(parse_number(get(row, "Landing Page Views", "Visualizações da página de destino"))),
@@ -190,12 +201,12 @@ def main() -> None:
         "taxApplied": False,
         "currency": "USD",
         "brlPerUsd": BRL_PER_USD,
-        "nativeUsdFilters": ["BUBA-ING | E2-CAP", "BUBBA | E2-CAP"],
+        "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
         "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBA-ING | E2-CAP", "BUBBA | E2-CAP"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP"], "Alice": ["Alice | E2-CAP"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
-        "sourceCounts": {**source_counts, "adRows": len(ads)},
+        "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
         "ads": ads,
         "events": prepared,
     }
