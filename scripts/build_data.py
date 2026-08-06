@@ -29,11 +29,11 @@ EVENTS_URL = (
 TAX_MULTIPLIER = 1.1385
 BRL_PER_USD = 5.10
 CAMPAIGN_VIEWS = {
-    "Bubba": "sd | e2-cap",
-    "Mari": "mari | e2-cap",
-    "Harumi": "harumi | e2-cap",
-    "Lucas": "lucas | e2-cap",
-    "Alice": "alice | e2-cap",
+    "Bubba": ("sd | e2-cap", "buba-ing | e2-cap", "bubba | e2-cap"),
+    "Mari": ("mari | e2-cap",),
+    "Harumi": ("harumi | e2-cap",),
+    "Lucas": ("lucas | e2-cap",),
+    "Alice": ("alice | e2-cap",),
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -117,7 +117,7 @@ def main() -> None:
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
         campaign_key = norm(campaign)
-        view = next((name for name, marker in CAMPAIGN_VIEWS.items() if marker in campaign_key), None)
+        view = next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
         if not date or not campaign or date > cutoff_date or not view:
             continue
         item = {
@@ -185,7 +185,7 @@ def main() -> None:
         "currency": "USD",
         "brlPerUsd": BRL_PER_USD,
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": "SD | E2-CAP", "Mari": "MARI | E2-CAP", "Harumi": "Harumi | E2-CAP", "Lucas": "Lucas | E2-CAP", "Alice": "Alice | E2-CAP"},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBA-ING | E2-CAP", "BUBBA | E2-CAP"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP"], "Alice": ["Alice | E2-CAP"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads)},
