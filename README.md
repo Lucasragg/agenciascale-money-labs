@@ -9,8 +9,8 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, a aba `Bubba`
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
 - A aba `Lucas` usa campanhas cujo nome contenha `Lucas | E2-CAP`.
 - A aba `Alice` usa campanhas cujo nome contenha `Alice | E2-CAP`.
-- A aba `Money Labs` consolida os três funis e apresenta a tabela de decisão agrupada por funil.
-- Gasto usado em todas as métricas: `(Amount Spent × 1,1385) ÷ 5,10`, exibido em USD.
+- A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
+- Todo gasto é exibido em USD e sem imposto: `BUBA-ING | E2-CAP` e `BUBBA | E2-CAP` já chegam em USD; as demais famílias chegam em BRL e usam `Amount Spent ÷ 5,10`.
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cujo evento é `venda registrada` e cuja etapa, na mesma linha, é `validação de plano`.
