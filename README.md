@@ -9,6 +9,7 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, as abas de m�
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
 - A aba `Lucas` usa campanhas cujo nome contenha `Lucas | E2-CAP`.
 - A aba `Alice` usa campanhas cujo nome contenha `Alice | E2-CAP`.
+- A aba `Matheus` usa campanhas cujo nome contenha `MATHEUS | E2-CAP`.
 - A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
 - Todo gasto é exibido em USD e sem imposto: a aba `Bubba` chega em BRL e usa `Amount Spent ÷ 5,10`; a aba `MoneyLabs Dolar` já chega em USD e mantém `Amount Spent`.
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
