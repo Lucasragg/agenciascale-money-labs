@@ -11,6 +11,7 @@ Dashboard estática e PII-free que cruza, em modo somente leitura, as abas de m�
 - A aba `Alice` usa campanhas cujo nome contenha `Alice | E2-CAP`.
 - A aba `Matheus` usa campanhas cujo nome contenha `MATHEUS | E2-CAP`.
 - Nas abas individuais, a tabela de decisão de mídia permite navegar por `Campanha → Conjunto → Anúncio`; a seleção de cada nível filtra o nível seguinte sem alterar os totais dos cards e gráficos.
+- Os gráficos exibem detalhes ao passar o mouse. O gráfico de CPL e CAC abaixo da tabela acompanha os filtros de campanha e conjunto aplicados na decisão de mídia.
 - A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
 - Todo gasto é exibido em USD e sem imposto: a aba `Bubba` chega em BRL e usa `Amount Spent ÷ 5,10`; a aba `MoneyLabs Dolar` já chega em USD e mantém `Amount Spent`.
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
