@@ -46,6 +46,7 @@ CAMPAIGN_VIEWS = {
     "Lucas": ("lucas | e2-cap",),
     "Alice": ("alice | e2-cap",),
     "Matheus": ("matheus | e2-cap",),
+    "Gabi": ("gabi | e2-cap",),
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -204,7 +205,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBA-ING | E2-CAP", "BUBBA | E2-CAP"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP"], "Alice": ["Alice | E2-CAP"], "Matheus": ["MATHEUS | E2-CAP"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBA-ING | E2-CAP", "BUBBA | E2-CAP"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP"], "Alice": ["Alice | E2-CAP"], "Matheus": ["MATHEUS | E2-CAP"], "Gabi": ["GABI | E2-CAP"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
