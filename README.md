@@ -2,6 +2,8 @@
 
 Dashboard estática e PII-free que cruza, em modo somente leitura, as abas de mídia `Bubba` e `MoneyLabs Dolar` com os eventos `Lead salvo` e `Venda registrada` da VMFY SHEETS.
 
+As vendas exigem `Venda registrada` e aceitam as etapas equivalentes `Validação de plano` ou `Validação do Plano`.
+
 ## Regras de cálculo
 
 - A aba `Bubba` usa campanhas cujo nome contenha `SD | E2-CAP`, `BUBA-ING | E2-CAP` ou `BUBBA | E2-CAP`.
