@@ -40,15 +40,18 @@ EVENTS_URL = (
 TAX_MULTIPLIER = 1.0
 BRL_PER_USD = 5.10
 CAMPAIGN_VIEWS = {
-    "Bubba": ("sd | e2-cap", "bubba | e2-cap", "buba | pt-br | leads"),
+    "Bubba": ("sd | e2-cap", "bubba | e2-cap", "buba | e2-cap", "buba | pt-br | leads"),
     "Buba-EN": ("buba-ing",),
-    "Mari": ("mari | e2-cap",),
+    "Mari": ("mari | e2-cap", "mari | pt-br | leads"),
     "Harumi": ("harumi | e2-cap",),
     "Lucas": ("lucas | e2-cap", "lucas | pt-br | leads"),
-    "Alice": ("alice | e2-cap",),
+    "Alice": ("alice | e2-cap", "alice | pt-br | leads"),
     "Matheus": ("matheus | e2-cap", "matheus | pt-br | leads"),
     "Gabi": ("gabi | e2-cap", "gabriela | es | leads"),
     "Nick": ("nick | en | leads",),
+}
+EXACT_CAMPAIGN_VIEWS = {
+    "[leads][abo]": "Bubba",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -77,6 +80,13 @@ def norm(value: object) -> str:
     value = unicodedata.normalize("NFKD", str(value or ""))
     value = "".join(ch for ch in value if not unicodedata.combining(ch))
     return re.sub(r"\s+", " ", value).strip().casefold()
+
+
+def campaign_view(campaign: object) -> str | None:
+    campaign_key = norm(campaign)
+    if campaign_key in EXACT_CAMPAIGN_VIEWS:
+        return EXACT_CAMPAIGN_VIEWS[campaign_key]
+    return next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
 
 
 def parse_number(value: object) -> float:
@@ -133,7 +143,7 @@ def main() -> None:
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
         campaign_key = norm(campaign)
-        view = next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
+        view = campaign_view(campaign)
         if not date or not campaign or date > cutoff_date or not view:
             continue
         raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
@@ -207,7 +217,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "Buba | PT-BR | LEADS"], "Buba-EN": ["BUBA-ING"], "Mari": ["MARI | E2-CAP"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS"], "Alice": ["Alice | E2-CAP"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR | LEADS", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
