@@ -18,7 +18,7 @@ As vendas exigem `Venda registrada` e aceitam as etapas equivalentes `Validaçã
 - A aba `Nick` usa campanhas cujo nome contenha `Nick | EN | LEADS` e converte o investimento da fonte `Bubba` de BRL para USD por R$ 5,10.
 - A aba `Bubba` também aceita campanhas `Buba | PT-BR | LEADS` quando há correspondência exata com o gerenciador; as linhas dessa campanha na fonte `MoneyLabs Dolar` permanecem em USD.
 - O seletor global de período inclui os atalhos `Hoje` e `Ontem`, além de 7, 14, 30 dias e todo o histórico.
-- Nas abas individuais, a tabela de decisão de mídia permite navegar por `Campanha → Conjunto → Anúncio`; a seleção de cada nível filtra o nível seguinte sem alterar os totais dos cards e gráficos.
+- Nas abas individuais, a tabela de decisão de mídia permite navegar por `Campanha → Conjunto → Anúncio`; ao clicar em um anúncio, o gráfico de CPL e CAC é filtrado para esse anúncio, sem alterar os totais dos cards e do gráfico principal.
 - Os gráficos exibem detalhes ao passar o mouse. O gráfico de CPL e CAC abaixo da tabela acompanha os filtros de campanha e conjunto aplicados na decisão de mídia.
 - A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
 - Todo gasto é exibido em USD e sem imposto: a aba `Bubba` chega em BRL e usa `Amount Spent ÷ 5,10`; a aba `MoneyLabs Dolar` já chega em USD e mantém `Amount Spent`.
