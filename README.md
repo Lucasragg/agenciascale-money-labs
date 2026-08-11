@@ -6,7 +6,8 @@ As vendas exigem `Venda registrada` e aceitam as etapas equivalentes `Validaçã
 
 ## Regras de cálculo
 
-- A aba `Bubba` usa campanhas cujo nome contenha `SD | E2-CAP`, `BUBA-ING | E2-CAP` ou `BUBBA | E2-CAP`.
+- A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP` ou `Buba | PT-BR | LEADS`.
+- A aba `Buba-EN` concentra exclusivamente as campanhas da Buba cujo nome contenha `BUBA-ING`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP`.
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
 - A aba `Lucas` usa campanhas cujo nome contenha `Lucas | E2-CAP`.
