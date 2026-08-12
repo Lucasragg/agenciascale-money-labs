@@ -128,7 +128,7 @@ def main() -> None:
     events_source = decode_csv(fetch(EVENTS_URL))
     if any(not rows for _, _, rows in ads_sources) or not events_source:
         raise RuntimeError("Uma das planilhas não retornou linhas de dados.")
-    required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "UTM Campaign", "UTM Content")}
+    required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "Tipo de registro", "UTM Campaign", "UTM Content")}
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
         raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
 
@@ -183,11 +183,13 @@ def main() -> None:
     sorted_events = sorted(events_source, key=lambda r: parse_date(get(r, "Data/hora (Brasília)")) or "")
     for row in sorted_events:
         event = norm(get(row, "Evento"))
-        if event not in {"lead salvo", "venda registrada"}:
+        record_type = norm(get(row, "Tipo de registro"))
+        if record_type == "aprovacao de plano":
+            kind = "sale"
+        elif event == "lead salvo":
+            kind = "lead"
+        else:
             continue
-        if event == "venda registrada" and norm(get(row, "Etapa")) not in {"validacao de plano", "validacao do plano"}:
-            continue
-        kind = "lead" if event == "lead salvo" else "sale"
         source_counts["leadRows" if kind == "lead" else "saleRows"] += 1
         date = parse_date(get(row, "Data/hora (Brasília)"))
         if not date or date > cutoff_date:
