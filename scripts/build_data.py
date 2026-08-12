@@ -122,6 +122,11 @@ def get(row: dict[str, str], *names: str) -> str:
     return ""
 
 
+def clean_id(value: object) -> str:
+    raw = str(value or "").strip()
+    return raw[:-2] if raw.endswith(".0") and raw[:-2].isdigit() else raw
+
+
 def main() -> None:
     ads_sources = [(name, currency, decode_csv(fetch(url))) for name, currency, url in ADS_SOURCES]
     ads_source = [(row, name, currency) for name, currency, rows in ads_sources for row in rows]
@@ -137,6 +142,9 @@ def main() -> None:
     campaign_names: dict[str, tuple[str, str]] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
     adsets_by_campaign: dict[str, set[str]] = defaultdict(set)
+    campaigns_by_id: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    adsets_by_id: dict[str, set[tuple[str, str, str]]] = defaultdict(set)
+    ads_by_id: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
     for row, source_tab, source_currency in ads_source:
         date = parse_date(get(row, "Day", "Dia", "Date"))
         campaign = get(row, "Campaign Name", "Campanha")
@@ -166,20 +174,54 @@ def main() -> None:
         campaign_names[ckey] = (view, campaign)
         adset_by_campaign_ad[(ckey, akey)].add(item["adset"])
         adsets_by_campaign[ckey].add(item["adset"])
+        campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
+        adset_id = clean_id(get(row, "Ad Set ID", "ID do conjunto de anúncios"))
+        ad_id = clean_id(get(row, "Ad ID", "ID do anúncio"))
+        if campaign_id:
+            campaigns_by_id[campaign_id].add((view, campaign))
+        if adset_id:
+            adsets_by_id[adset_id].add((view, campaign, item["adset"]))
+        if ad_id:
+            ads_by_id[ad_id].add((view, campaign, item["adset"], item["ad"]))
 
-    def resolve_utm(campaign: str, ad: str) -> tuple[str, str, str, str] | None:
+    def unique(mapping: dict[str, set[tuple]], identifier: object) -> tuple | None:
+        values = mapping.get(clean_id(identifier), set())
+        return next(iter(values)) if len(values) == 1 else None
+
+    def resolve_utm(row: dict[str, str]) -> tuple[str, str, str, str, str] | None:
+        campaign = get(row, "UTM Campaign")
+        ad = get(row, "UTM Content")
         ckey, akey = norm(campaign), norm(ad)
-        if ckey not in campaign_names:
+        ad_match = unique(ads_by_id, get(row, "Ad ID")) or unique(ads_by_id, ad)
+        if ad_match:
+            return (*ad_match, "ad_id")
+
+        campaign_match = unique(campaigns_by_id, get(row, "Campaign ID")) or unique(campaigns_by_id, campaign)
+        if not campaign_match and ckey in campaign_names:
+            campaign_match = campaign_names[ckey]
+        if not campaign_match:
             return None
-        sets = adset_by_campaign_ad.get((ckey, akey), set())
-        if not sets and len(adsets_by_campaign[ckey]) == 1:
-            sets = adsets_by_campaign[ckey]
-        adset = next(iter(sets)) if len(sets) == 1 else "Não atribuído"
-        view, campaign_name = campaign_names[ckey]
-        return view, campaign_name, adset, ad.strip() or "Não atribuído"
+        view, campaign_name = campaign_match
+        canonical_ckey = norm(campaign_name)
+        adset_match = unique(adsets_by_id, get(row, "Ad Set ID"))
+        if adset_match and (adset_match[0], adset_match[1]) != (view, campaign_name):
+            adset_match = None
+        sets = adset_by_campaign_ad.get((canonical_ckey, akey), set())
+        if adset_match:
+            adset = adset_match[2]
+        elif len(sets) == 1:
+            adset = next(iter(sets))
+        elif len(adsets_by_campaign[canonical_ckey]) == 1:
+            adset = next(iter(adsets_by_campaign[canonical_ckey]))
+        else:
+            adset = "Não atribuído"
+        known_ad = bool(adset_by_campaign_ad.get((canonical_ckey, akey)))
+        resolved_ad = ad.strip() if known_ad else "Não atribuído"
+        method = "campaign_id" if clean_id(get(row, "Campaign ID")) or clean_id(campaign) in campaigns_by_id else "utm_name"
+        return view, campaign_name, adset, resolved_ad, method
 
     prepared: list[dict[str, object]] = []
-    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0}
+    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0}
     sorted_events = sorted(events_source, key=lambda r: parse_date(get(r, "Data/hora (Brasília)")) or "")
     for row in sorted_events:
         event = norm(get(row, "Evento"))
@@ -194,12 +236,10 @@ def main() -> None:
         date = parse_date(get(row, "Data/hora (Brasília)"))
         if not date or date > cutoff_date:
             continue
-        campaign = get(row, "UTM Campaign")
-        ad = get(row, "UTM Content")
-        resolved = resolve_utm(campaign, ad)
+        resolved = resolve_utm(row)
         if not resolved:
             continue
-        view, campaign, adset, ad = resolved
+        view, campaign, adset, ad, method = resolved
         prepared.append({
             "date": date,
             "view": view,
@@ -209,6 +249,8 @@ def main() -> None:
             "ad": ad,
         })
         source_counts["matchedLeads" if kind == "lead" else "matchedSales"] += 1
+        if method != "utm_name":
+            source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
     dates = [str(row["date"]) for row in ads] + [str(row["date"]) for row in prepared]
     output = {
