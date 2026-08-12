@@ -2,7 +2,7 @@
 
 Dashboard estática e PII-free que cruza, em modo somente leitura, as abas de mídia `Bubba` e `MoneyLabs Dolar` com os eventos `Lead salvo` e `Venda registrada` da VMFY SHEETS.
 
-As vendas exigem `Venda registrada` e aceitam as etapas equivalentes `Validação de plano` ou `Validação do Plano`.
+As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor normalizado `APROVAÇÃO DE PLANO`.
 
 ## Regras de cálculo
 
@@ -24,7 +24,7 @@ As vendas exigem `Venda registrada` e aceitam as etapas equivalentes `Validaçã
 - Todo gasto é exibido em USD e sem imposto: a aba `Bubba` chega em BRL e usa `Amount Spent ÷ 5,10`; a aba `MoneyLabs Dolar` já chega em USD e mantém `Amount Spent`.
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
-- Vendas: linhas cujo evento é `venda registrada` e cuja etapa, na mesma linha, é `validação de plano`.
+- Vendas: linhas cuja coluna AA `Tipo de registro` é `APROVAÇÃO DE PLANO`; as colunas antigas `Evento` e `Etapa` não determinam mais a venda.
 - Campanha: `UTM Campaign`; anúncio: `UTM Content`; conjunto: lookup campanha+anúncio na aba Bubba.
 - Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
 - Receita e ROAS não são publicados.
