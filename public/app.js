@@ -27,7 +27,7 @@ function renderMetrics(){
     ['Investimento',c.spend,p.spend,money,'Gasto sem imposto','$',false],['Impressões',c.impressions,p.impressions,n=>num(n),'Entrega','◎',false],
     ['Cliques',c.clicks,p.clicks,n=>num(n),'Cliques no anúncio','↗',false],['Landing page views',c.pageViews,p.pageViews,n=>num(n),'Páginas carregadas','◉',false],
     ['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
-    ['Vendas',c.sales,p.sales,n=>num(n),'Venda + validação de plano','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
+    ['Vendas',c.sales,p.sales,n=>num(n),'Tipo: aprovação de plano','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
     ['CTR',ratio(c.clicks,c.impressions),ratio(p.clicks,p.impressions),pct,'Clique / impressão','%',false],['CPC',ratio(c.spend,c.clicks),ratio(p.spend,p.clicks),money,'Custo por clique','C',true],
     ['Connect rate',ratio(c.pageViews,c.clicks),ratio(p.pageViews,p.clicks),pct,'Page view / clique','↳',false],['Conversão LP → Lead',ratio(c.leads,c.pageViews),ratio(p.leads,p.pageViews),pct,'Lead / page view','L%',false],
     ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Custo por venda','A',true],
