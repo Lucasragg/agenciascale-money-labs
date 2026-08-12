@@ -18,6 +18,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A aba `Nick` usa campanhas cujo nome contenha `Nick | EN | LEADS` e converte o investimento da fonte `Bubba` de BRL para USD por R$ 5,10.
 - A aba `Bubba` também aceita campanhas `Buba | PT-BR | LEADS` quando há correspondência exata com o gerenciador; as linhas dessa campanha na fonte `MoneyLabs Dolar` permanecem em USD.
 - O seletor global de período inclui os atalhos `Hoje` e `Ontem`, além de 7, 14, 30 dias e todo o histórico.
+- O seletor global de período permanece no cabeçalho fixo durante a rolagem, incluindo os atalhos e o intervalo personalizado, para facilitar a análise das tabelas de campanha, conjunto e anúncio.
 - Nas abas individuais, a tabela de decisão de mídia permite navegar por `Campanha → Conjunto → Anúncio`; ao clicar em um anúncio, o gráfico de CPL e CAC é filtrado para esse anúncio, sem alterar os totais dos cards e do gráfico principal.
 - Os gráficos exibem detalhes ao passar o mouse. O gráfico principal de performance diária inclui investimento, leads, vendas, CPL e CAC; o gráfico de CPL e CAC abaixo da tabela acompanha os filtros de campanha, conjunto e anúncio aplicados na decisão de mídia.
 - A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
