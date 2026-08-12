@@ -26,7 +26,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cuja coluna AA `Tipo de registro` é `APROVAÇÃO DE PLANO`; as colunas antigas `Evento` e `Etapa` não determinam mais a venda.
-- Campanha: `UTM Campaign`; anúncio: `UTM Content`; conjunto: lookup campanha+anúncio na aba Bubba.
+- A atribuição prioriza `Ad ID`; depois usa `Campaign ID` e `Ad Set ID`; `UTM Campaign` e `UTM Content` permanecem como fallback para linhas antigas sem IDs.
 - Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
 - Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
