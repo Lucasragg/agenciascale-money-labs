@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260812b">
+  <link rel="stylesheet" href="styles.css?v=20260812c">
 </head>
 <body>
   <div class="shell">
@@ -18,16 +18,16 @@
         <span class="brand-mark"><i></i><i></i><i></i></span>
         <div><strong>Money Labs</strong><small>Performance Intelligence</small></div>
       </div>
+      <div class="filters sticky-filters" aria-label="Filtro global de período">
+        <div class="quick" id="quickFilters"><button data-days="today">Hoje</button><button data-days="yesterday">Ontem</button><button data-days="7" class="active">7 dias</button><button data-days="14">14 dias</button><button data-days="30">30 dias</button><button data-days="all">Tudo</button></div>
+        <div class="dates"><label>De <input type="date" id="startDate"></label><span>→</span><label>Até <input type="date" id="endDate"></label></div>
+      </div>
       <div class="live"><span></span> Dados em nuvem <b id="updatedAt">carregando…</b></div>
     </header>
 
     <main>
       <section class="hero">
         <div><p class="eyebrow">META ADS · FUNIL DE AQUISIÇÃO</p><h1>Visão executiva de performance</h1><p>Da impressão à venda, com investimento consolidado em dólar e sem imposto.</p><nav class="view-tabs" id="viewTabs" aria-label="Visões da dashboard"><button class="active" data-view="Money Labs">Money Labs</button><button data-view="Bubba">Bubba</button><button data-view="Buba-EN">Buba-EN</button><button data-view="Mari">Mari</button><button data-view="Harumi">Harumi</button><button data-view="Lucas">Lucas</button><button data-view="Alice">Alice</button><button data-view="Matheus">Matheus</button><button data-view="Gabi">Gabi</button><button data-view="Nick">Nick</button></nav></div>
-        <div class="filters">
-          <div class="quick" id="quickFilters"><button data-days="today">Hoje</button><button data-days="yesterday">Ontem</button><button data-days="7" class="active">7 dias</button><button data-days="14">14 dias</button><button data-days="30">30 dias</button><button data-days="all">Tudo</button></div>
-          <div class="dates"><label>De <input type="date" id="startDate"></label><span>→</span><label>Até <input type="date" id="endDate"></label></div>
-        </div>
       </section>
 
       <section class="notice"><span>i</span><p><b>Investimento em dólar sem imposto</b> A fonte Bubba usa conversão fixa de <strong id="exchangeRate">R$ 5,10 por US$ 1</strong>; a fonte MoneyLabs Dolar mantém o valor original em USD. Nenhum gasto recebe acréscimo de imposto. Período atualizado até o dia atual.</p></section>
