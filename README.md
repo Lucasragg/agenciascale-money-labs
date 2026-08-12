@@ -6,7 +6,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 
 ## Regras de cálculo
 
-- A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP`, `BUBA | E2-CAP` ou `Buba | PT-BR | LEADS`; a campanha exata `[LEADS][ABO]` também entra porque utiliza criativos Buba e possui cruzamento exato na VMFY.
+- A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP`, `BUBA | E2-CAP`, `Buba | PT-BR | LEADS` ou `Buba | PT-BR | PUR`; a campanha exata `[LEADS][ABO]` também entra porque utiliza criativos Buba e possui cruzamento exato na VMFY.
 - A aba `Buba-EN` concentra exclusivamente as campanhas da Buba cujo nome contenha `BUBA-ING`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP` ou `Mari | PT-BR | LEADS`.
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
@@ -19,7 +19,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A aba `Bubba` também aceita campanhas `Buba | PT-BR | LEADS` quando há correspondência exata com o gerenciador; as linhas dessa campanha na fonte `MoneyLabs Dolar` permanecem em USD.
 - O seletor global de período inclui os atalhos `Hoje` e `Ontem`, além de 7, 14, 30 dias e todo o histórico.
 - Nas abas individuais, a tabela de decisão de mídia permite navegar por `Campanha → Conjunto → Anúncio`; ao clicar em um anúncio, o gráfico de CPL e CAC é filtrado para esse anúncio, sem alterar os totais dos cards e do gráfico principal.
-- Os gráficos exibem detalhes ao passar o mouse. O gráfico de CPL e CAC abaixo da tabela acompanha os filtros de campanha e conjunto aplicados na decisão de mídia.
+- Os gráficos exibem detalhes ao passar o mouse. O gráfico principal de performance diária inclui investimento, leads, vendas, CPL e CAC; o gráfico de CPL e CAC abaixo da tabela acompanha os filtros de campanha, conjunto e anúncio aplicados na decisão de mídia.
 - A aba `Money Labs` consolida todos os funis e apresenta a tabela de decisão agrupada por funil.
 - Todo gasto é exibido em USD e sem imposto: a aba `Bubba` chega em BRL e usa `Amount Spent ÷ 5,10`; a aba `MoneyLabs Dolar` já chega em USD e mantém `Amount Spent`.
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
