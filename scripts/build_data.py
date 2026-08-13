@@ -118,6 +118,19 @@ def parse_date(value: object) -> str | None:
     return None
 
 
+def parse_event_date_pacific(value: object) -> str | None:
+    """Convert a VMFY timestamp from Brasilia time to the Meta account's Pacific date."""
+    raw = str(value or "").strip()
+    for fmt in ("%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M"):
+        try:
+            brasilia = datetime.strptime(raw, fmt).replace(tzinfo=ZoneInfo("America/Sao_Paulo"))
+            return brasilia.astimezone(ZoneInfo("America/Los_Angeles")).date().isoformat()
+        except ValueError:
+            pass
+    # Date-only values have no safe hour to shift; retain their declared calendar date.
+    return parse_date(raw)
+
+
 def get(row: dict[str, str], *names: str) -> str:
     by_norm = {norm(key): value for key, value in row.items()}
     for name in names:
@@ -141,7 +154,7 @@ def main() -> None:
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
         raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
 
-    cutoff_date = datetime.now(ZoneInfo("America/Sao_Paulo")).date().isoformat()
+    cutoff_date = datetime.now(ZoneInfo("America/Los_Angeles")).date().isoformat()
     mariane_campaign_ids: set[str] = set()
     mariane_adset_ids: set[str] = set()
     mariane_ad_ids: set[str] = set()
@@ -252,7 +265,7 @@ def main() -> None:
         return view, campaign_name, adset, resolved_ad, method
 
     prepared: list[dict[str, object]] = []
-    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0}
+    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
     for row in events_source:
         event = norm(get(row, "Evento"))
         record_type = norm(get(row, "Tipo de registro"))
@@ -263,7 +276,11 @@ def main() -> None:
         else:
             continue
         source_counts["leadRows" if kind == "lead" else "saleRows"] += 1
-        date = parse_date(get(row, "Data/hora (Brasília)"))
+        timestamp = get(row, "Data/hora (Brasília)")
+        source_date = parse_date(timestamp)
+        date = parse_event_date_pacific(timestamp)
+        if date and source_date and date != source_date:
+            source_counts["timezoneShiftedLeads" if kind == "lead" else "timezoneShiftedSales"] += 1
         if not date or date > cutoff_date:
             continue
         resolved = resolve_utm(row)
@@ -288,6 +305,9 @@ def main() -> None:
         "taxMultiplier": TAX_MULTIPLIER,
         "taxApplied": False,
         "currency": "USD",
+        "reportingTimezone": "America/Los_Angeles",
+        "mediaTimezone": "America/Los_Angeles",
+        "eventsSourceTimezone": "America/Sao_Paulo",
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
