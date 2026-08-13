@@ -42,7 +42,7 @@ BRL_PER_USD = 5.10
 CAMPAIGN_VIEWS = {
     "Bubba": ("sd | e2-cap", "bubba | e2-cap", "buba | e2-cap", "buba | pt-br | leads", "buba | pt-br | pur"),
     "Buba-EN": ("buba-ing", "buba | en | purchase"),
-    "Mari": ("mari | e2-cap", "mari | pt-br | leads"),
+    "Mari": ("mari | e2-cap", "mari | pt-br | leads", "mari | pt-pt | purchase"),
     "Harumi": ("harumi | e2-cap",),
     "Lucas": ("lucas | e2-cap", "lucas | pt-br | leads", "lucas | pt-br | purchase"),
     "Alice": ("alice | e2-cap", "alice | pt-br | leads"),
@@ -142,6 +142,33 @@ def main() -> None:
         raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
 
     cutoff_date = datetime.now(ZoneInfo("America/Sao_Paulo")).date().isoformat()
+    mariane_campaign_ids: set[str] = set()
+    mariane_adset_ids: set[str] = set()
+    mariane_ad_ids: set[str] = set()
+    for row in events_source:
+        if norm(get(row, "Sub ID 1")) != "mariane-paula":
+            continue
+        campaign_id = clean_id(get(row, "Campaign ID"))
+        adset_id = clean_id(get(row, "Ad Set ID"))
+        ad_id = clean_id(get(row, "Ad ID"))
+        if campaign_id:
+            mariane_campaign_ids.add(campaign_id)
+        if adset_id:
+            mariane_adset_ids.add(adset_id)
+        if ad_id:
+            mariane_ad_ids.add(ad_id)
+
+    mariane_campaign_names: set[str] = set()
+    for row, _source_tab, _source_currency in ads_source:
+        campaign = get(row, "Campaign Name", "Campanha")
+        if not campaign:
+            continue
+        campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
+        adset_id = clean_id(get(row, "Ad Set ID", "ID do conjunto de anúncios"))
+        ad_id = clean_id(get(row, "Ad ID", "ID do anúncio"))
+        if campaign_id in mariane_campaign_ids or adset_id in mariane_adset_ids or ad_id in mariane_ad_ids:
+            mariane_campaign_names.add(norm(campaign))
+
     ads: list[dict[str, object]] = []
     campaign_names: dict[str, tuple[str, str]] = {}
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
@@ -155,7 +182,7 @@ def main() -> None:
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
         campaign_key = norm(campaign)
-        view = campaign_view(campaign)
+        view = campaign_view(campaign) or ("Mari" if campaign_key in mariane_campaign_names else None)
         if not date or not campaign or date > cutoff_date or not view:
             continue
         raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
@@ -264,7 +291,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR | LEADS", "Buba | PT-BR | PUR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "[EU][LEAD][LP01-3][CREATIVE-TEST]", "[US+CA][LEAD][LP01-3][CREATIVE-TEST]", "[PT][LEAD][LP01-3][CREATIVE-TEST] — Cópia", "[PT][LEAD][TESTE-LPS] — Cópia"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR | LEADS", "Buba | PT-BR | PUR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
