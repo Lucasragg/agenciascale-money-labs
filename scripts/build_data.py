@@ -52,6 +52,10 @@ CAMPAIGN_VIEWS = {
 }
 EXACT_CAMPAIGN_VIEWS = {
     "[leads][abo]": "Bubba",
+    "[eu][lead][lp01-3][creative-test]": "Mari",
+    "[us+ca][lead][lp01-3][creative-test]": "Mari",
+    "[pt][lead][lp01-3][creative-test] — copia": "Mari",
+    "[pt][lead][teste-lps] — copia": "Mari",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -260,7 +264,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR | LEADS", "Buba | PT-BR | PUR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR | LEADS", "Buba | PT-BR | PUR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "[EU][LEAD][LP01-3][CREATIVE-TEST]", "[US+CA][LEAD][LP01-3][CREATIVE-TEST]", "[PT][LEAD][LP01-3][CREATIVE-TEST] — Cópia", "[PT][LEAD][TESTE-LPS] — Cópia"], "Harumi": ["Harumi | E2-CAP"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS"], "Gabi": ["GABI | E2-CAP", "Gabriela | ES | LEADS"], "Nick": ["Nick | EN | LEADS"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
