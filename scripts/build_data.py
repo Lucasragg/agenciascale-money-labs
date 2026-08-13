@@ -222,8 +222,7 @@ def main() -> None:
 
     prepared: list[dict[str, object]] = []
     source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0}
-    sorted_events = sorted(events_source, key=lambda r: parse_date(get(r, "Data/hora (Brasília)")) or "")
-    for row in sorted_events:
+    for row in events_source:
         event = norm(get(row, "Evento"))
         record_type = norm(get(row, "Tipo de registro"))
         if record_type == "aprovacao de plano":
