@@ -2,7 +2,7 @@ name: Atualizar e publicar dashboard
 
 on:
   schedule:
-    - cron: "17 */3 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
   repository_dispatch:
     types: [dashboard_refresh]
