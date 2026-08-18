@@ -47,7 +47,7 @@ CAMPAIGN_VIEWS = {
     "Lucas": ("lucas | e2-cap", "lucas | pt-br | leads", "lucas | pt-br | purchase"),
     "Alice": ("alice | e2-cap", "alice | pt-br | leads", "alice | pt-br | purchase"),
     "Matheus": ("matheus | e2-cap", "matheus | pt-br | leads", "matheus | pt-br | purchase"),
-    "Gabi": ("gabi | e2-cap", "gabi | es | pur", "gabriela | es | leads", "gabriela | es | purchase"),
+    "Gabi": ("gabi | e2-cap", "gabi | es | lead", "gabi | es | pur", "gabriela | es | leads", "gabriela | es | purchase"),
     "Nick": ("nick | en | leads",),
 }
 EXACT_CAMPAIGN_VIEWS = {
@@ -317,7 +317,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE"], "Nick": ["Nick | EN | LEADS"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE"], "Nick": ["Nick | EN | LEADS"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
