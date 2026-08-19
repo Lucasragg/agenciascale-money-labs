@@ -29,6 +29,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A atribuição prioriza `Ad ID`; depois usa `Campaign ID` e `Ad Set ID`; `UTM Campaign` e `UTM Content` permanecem como fallback para linhas antigas sem IDs.
 - Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
 - Leads e vendas sem qualquer UTM são orgânicos. Quando o `Sub ID 1` identifica o expert, entram na aba dele como `Orgânico` e passam a compor seu CPL/CAC; os demais permanecem na aba geral `Orgânico`.
+- A aba `Orgânico` consolida todos os registros orgânicos e mostra leads e vendas separados por expert, sem duplicá-los no total da Money Labs.
 - Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
 
