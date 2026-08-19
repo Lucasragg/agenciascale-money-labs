@@ -312,6 +312,8 @@ def main() -> None:
             "campaign": campaign,
             "adset": adset,
             "ad": ad,
+            "channel": "organic" if method in ("organic", "organic_expert") else "paid",
+            "expert": view if method == "organic_expert" else ("Não identificado" if method == "organic" else view),
         })
         source_counts["matchedLeads" if kind == "lead" else "matchedSales"] += 1
         if method in ("organic", "organic_expert"):
