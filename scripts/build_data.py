@@ -51,6 +51,12 @@ CAMPAIGN_VIEWS = {
     "Nick": ("nick | en | leads",),
     "Orgânico": (),
 }
+ORGANIC_EXPERT_VIEWS = {
+    "buba": "Bubba",
+    "mariane-paula": "Mari",
+    "lucas-neves": "Lucas",
+    "gabrielereina": "Gabi",
+}
 EXACT_CAMPAIGN_VIEWS = {
     "[leads][abo]": "Bubba",
     "[eu][lead][lp01-3][creative-test]": "Mari",
@@ -272,7 +278,7 @@ def main() -> None:
         return view, campaign_name, adset, resolved_ad, method
 
     prepared: list[dict[str, object]] = []
-    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
+    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "organicExpertMatchedLeads": 0, "organicExpertMatchedSales": 0, "organicUnassignedLeads": 0, "organicUnassignedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
     for row in events_source:
         event = norm(get(row, "Evento"))
         record_type = norm(get(row, "Tipo de registro"))
@@ -291,7 +297,11 @@ def main() -> None:
         if not date or date > cutoff_date:
             continue
         has_utm = any(norm(get(row, name)) for name in ("UTM Source", "UTM Medium", "UTM Campaign", "UTM Term", "UTM Content"))
-        resolved = resolve_utm(row) if has_utm else ("Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic")
+        if has_utm:
+            resolved = resolve_utm(row)
+        else:
+            expert_view = ORGANIC_EXPERT_VIEWS.get(norm(get(row, "Sub ID 1")))
+            resolved = (expert_view or "Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic_expert" if expert_view else "organic")
         if not resolved:
             continue
         view, campaign, adset, ad, method = resolved
@@ -304,8 +314,12 @@ def main() -> None:
             "ad": ad,
         })
         source_counts["matchedLeads" if kind == "lead" else "matchedSales"] += 1
-        if method == "organic":
+        if method in ("organic", "organic_expert"):
             source_counts["organicLeads" if kind == "lead" else "organicSales"] += 1
+            if method == "organic_expert":
+                source_counts["organicExpertMatchedLeads" if kind == "lead" else "organicExpertMatchedSales"] += 1
+            else:
+                source_counts["organicUnassignedLeads" if kind == "lead" else "organicUnassignedSales"] += 1
         elif method != "utm_name":
             source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
@@ -321,7 +335,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem atribuição paga por ID"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]", "Orgânico por Sub ID 1: buba"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
