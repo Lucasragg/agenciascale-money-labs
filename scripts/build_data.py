@@ -49,6 +49,7 @@ CAMPAIGN_VIEWS = {
     "Matheus": ("matheus | e2-cap", "matheus | pt-br | leads", "matheus | pt-br | purchase"),
     "Gabi": ("gabi | e2-cap", "gabi | es | lead", "gabi | es | pur", "gabriela | es | leads", "gabriela | es | purchase"),
     "Nick": ("nick | en | leads",),
+    "Orgânico": (),
 }
 EXACT_CAMPAIGN_VIEWS = {
     "[leads][abo]": "Bubba",
@@ -271,7 +272,7 @@ def main() -> None:
         return view, campaign_name, adset, resolved_ad, method
 
     prepared: list[dict[str, object]] = []
-    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
+    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
     for row in events_source:
         event = norm(get(row, "Evento"))
         record_type = norm(get(row, "Tipo de registro"))
@@ -289,7 +290,8 @@ def main() -> None:
             source_counts["timezoneShiftedLeads" if kind == "lead" else "timezoneShiftedSales"] += 1
         if not date or date > cutoff_date:
             continue
-        resolved = resolve_utm(row)
+        has_utm = any(norm(get(row, name)) for name in ("UTM Source", "UTM Medium", "UTM Campaign", "UTM Term", "UTM Content"))
+        resolved = resolve_utm(row) if has_utm else ("Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic")
         if not resolved:
             continue
         view, campaign, adset, ad, method = resolved
@@ -302,7 +304,9 @@ def main() -> None:
             "ad": ad,
         })
         source_counts["matchedLeads" if kind == "lead" else "matchedSales"] += 1
-        if method != "utm_name":
+        if method == "organic":
+            source_counts["organicLeads" if kind == "lead" else "organicSales"] += 1
+        elif method != "utm_name":
             source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
     dates = [str(row["date"]) for row in ads] + [str(row["date"]) for row in prepared]
@@ -317,7 +321,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE"], "Nick": ["Nick | EN | LEADS"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem atribuição paga por ID"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
