@@ -10,11 +10,11 @@ const inView=x=>state.view==='Money Labs'||(state.view==='Orgânico'?x.channel==
 const matchesSelection=(x,filters)=>!filters||(!filters.campaign||x.campaign===filters.campaign)&&(!filters.adset||x.adset===filters.adset)&&(!filters.ad||x.ad===filters.ad);
 
 function aggregate(start,end,group,filters=null){
-  const map=new Map(); const blank=()=>({spend:0,impressions:0,clicks:0,pageViews:0,leads:0,sales:0});
+  const map=new Map(); const blank=()=>({spend:0,impressions:0,clicks:0,pageViews:0,leads:0,sales:0,trafficSales:0});
   const keyOf=x=>group==='view'?x.view:group==='expert'?x.expert:group==='campaign'?x.campaign:group==='adset'?`${x.campaign} › ${x.adset}`:group==='adName'?x.ad:`${x.campaign} › ${x.adset} › ${x.ad}`;
   const take=(key,x)=>{if(!map.has(key))map.set(key,{...blank(),view:x?.view,expert:x?.expert,campaign:x?.campaign,adset:x?.adset,ad:x?.ad});return map.get(key)};
   state.data.ads.filter(x=>inView(x)&&inRange(x.date,start,end)&&matchesSelection(x,filters)).forEach(x=>{const v=take(group?keyOf(x):'_',x);v.spend+=x.spend;v.impressions+=x.impressions;v.clicks+=x.clicks;v.pageViews+=x.pageViews});
-  state.data.events.filter(x=>inView(x)&&inRange(x.date,start,end)&&matchesSelection(x,filters)).forEach(x=>{const v=take(group?keyOf(x):'_',x);if(x.type==='lead')v.leads++;else v.sales++});
+  state.data.events.filter(x=>inView(x)&&inRange(x.date,start,end)&&matchesSelection(x,filters)).forEach(x=>{const v=take(group?keyOf(x):'_',x);if(x.type==='lead')v.leads++;else{v.sales++;if(x.channel!=='organic')v.trafficSales++}});
   if(group)return [...map].map(([name,v])=>({name,...v}));return map.get('_')||blank();
 }
 
@@ -27,13 +27,13 @@ function renderMetrics(){
     ['Investimento',c.spend,p.spend,money,'Gasto sem imposto','$',false],['Impressões',c.impressions,p.impressions,n=>num(n),'Entrega','◎',false],
     ['Cliques',c.clicks,p.clicks,n=>num(n),'Cliques no anúncio','↗',false],['Landing page views',c.pageViews,p.pageViews,n=>num(n),'Páginas carregadas','◉',false],
     ['Leads',c.leads,p.leads,n=>num(n),'Evento: lead salvo','●',false],
-    ['Vendas',c.sales,p.sales,n=>num(n),'Tipo: aprovação de plano','✓',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
+    ['Vendas global',c.sales,p.sales,n=>num(n),'Tráfego + orgânico','✓',false],['Vendas tráfego',c.trafficSales,p.trafficSales,n=>num(n),'Somente atribuição paga','T',false],['CPM',ratio(c.spend,c.impressions)*1000,ratio(p.spend,p.impressions)*1000,money,'Por mil impressões','M',true],
     ['CTR',ratio(c.clicks,c.impressions),ratio(p.clicks,p.impressions),pct,'Clique / impressão','%',false],['CPC',ratio(c.spend,c.clicks),ratio(p.spend,p.clicks),money,'Custo por clique','C',true],
     ['Connect rate',ratio(c.pageViews,c.clicks),ratio(p.pageViews,p.clicks),pct,'Page view / clique','↳',false],['Conversão LP → Lead',ratio(c.leads,c.pageViews),ratio(p.leads,p.pageViews),pct,'Lead / page view','L%',false],
-    ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Custo por venda','A',true],
+    ['CPL',ratio(c.spend,c.leads),ratio(p.spend,p.leads),money,'Custo por lead','L',true],['CAC global',ratio(c.spend,c.sales),ratio(p.spend,p.sales),money,'Gasto / vendas globais','G',true],['CAC tráfego',ratio(c.spend,c.trafficSales),ratio(p.spend,p.trafficSales),money,'Gasto / vendas de tráfego','T',true],
     ['Conversão em vendas',ratio(c.sales,c.leads),ratio(p.sales,p.leads),pct,'Venda / lead','↯',false]
   ];
-  const colors=['#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#fb923c','#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#facc15','#fb7185','#a78bfa'];
+  const colors=['#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#fb923c','#f59e0b','#4f8cff','#8b5cf6','#2dd4bf','#22c5d6','#34d399','#facc15','#fb7185','#f43f5e','#a78bfa'];
   $('#metrics').innerHTML=defs.map((m,i)=>{const d=delta(m[1],m[2],m[6]);return `<article class="metric" style="--accent:${colors[i]}"><div class="metric-label"><span>${m[0]}</span><i class="metric-icon">${m[5]}</i></div><div class="metric-value">${m[3](m[1])}</div><div class="metric-foot"><span>${m[4]}</span><span class="delta ${d.cls}">${d.label} vs anterior</span></div></article>`}).join('');
 }
 
