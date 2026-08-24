@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260812c">
+  <link rel="stylesheet" href="styles.css?v=20260824a">
 </head>
 <body>
   <div class="shell">
@@ -34,6 +34,11 @@
 
       <section class="metrics" id="metrics"></section>
 
+      <section class="panel daily-metrics">
+        <div class="panel-head table-head"><div><p class="eyebrow">DETALHAMENTO DIÁRIO</p><h2>Todas as métricas por dia</h2></div><span>Datas mais recentes primeiro</span></div>
+        <div class="table-wrap"><table class="daily-metrics-table"><thead><tr><th>Data</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>CPC</th><th>Leads</th><th>CPL</th><th>Vendas tráfego</th><th>Vendas global</th><th>CAC tráfego</th><th>CAC global</th><th>Connect Rate</th><th>Conversão LP / Lead</th><th>Conversão em vendas</th></tr></thead><tbody id="dailyMetricsBody"></tbody></table></div>
+      </section>
+
       <section class="grid-two">
         <article class="panel funnel-panel"><div class="panel-head"><div><p class="eyebrow">CONVERSÃO</p><h2>Funil no período</h2></div><span id="periodLabel"></span></div><div id="funnel" class="funnel"></div></article>
         <article class="panel chart-panel"><div class="panel-head"><div><p class="eyebrow">EVOLUÇÃO</p><h2>Performance por dia</h2></div><div class="legend"><span class="spend">Investimento</span><span class="leads">Leads</span><span class="sales">Vendas</span><span class="cpl">CPL</span><span class="cac">CAC</span></div></div><div id="dailyChart" class="daily-chart"></div></article>
@@ -49,6 +54,6 @@
     </main>
   </div>
   <div id="error" class="error" hidden></div>
-  <script src="app.js?v=20260812b"></script>
+  <script src="app.js?v=20260824a"></script>
 </body>
 </html>
