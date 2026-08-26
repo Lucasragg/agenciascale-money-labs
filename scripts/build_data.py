@@ -34,8 +34,9 @@ ADS_SOURCES = (
 )
 EVENTS_URL = (
     "https://docs.google.com/spreadsheets/d/"
-    "1DmGXEvfbS1_324K3PIadyP3kv1tBDqkC6NaCWw_2KfE/export"
-    "?format=csv&gid=0"
+    "1DmGXEvfbS1_324K3PIadyP3kv1tBDqkC6NaCWw_2KfE/gviz/tq"
+    "?tqx=out:csv&gid=0&headers=1"
+    "&tq=select%20A%2CB%2CJ%2CK%2CL%2CM%2CN%2CS%2CAA%2CAF%2CAG%2CAH"
 )
 TAX_MULTIPLIER = 1.0
 BRL_PER_USD = 5.10
@@ -160,7 +161,8 @@ def main() -> None:
         raise RuntimeError("Uma das planilhas não retornou linhas de dados.")
     required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "Tipo de registro", "UTM Campaign", "UTM Content")}
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
-        raise RuntimeError("Cabeçalhos esperados não encontrados na planilha VMFY SHEETS.")
+        observed = ", ".join(events_source[0].keys())
+        raise RuntimeError(f"Cabeçalhos esperados não encontrados na planilha VMFY SHEETS. Recebidos: {observed}")
 
     cutoff_date = datetime.now(ZoneInfo("America/Los_Angeles")).date().isoformat()
     mariane_campaign_ids: set[str] = set()
