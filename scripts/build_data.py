@@ -300,13 +300,10 @@ def main() -> None:
         if not date or date > cutoff_date:
             continue
         has_utm = any(norm(get(row, name)) for name in ("UTM Source", "UTM Medium", "UTM Campaign", "UTM Term", "UTM Content"))
-        if has_utm:
-            resolved = resolve_utm(row)
-        else:
+        resolved = resolve_utm(row) if has_utm else None
+        if not resolved:
             expert_view = ORGANIC_EXPERT_VIEWS.get(norm(get(row, "Sub ID 1")))
             resolved = (expert_view or "Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic_expert" if expert_view else "organic")
-        if not resolved:
-            continue
         view, campaign, adset, ad, method = resolved
         prepared.append({
             "date": date,
