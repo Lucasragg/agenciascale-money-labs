@@ -36,7 +36,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 
 ## Automação
 
-O workflow roda a cada 3 horas, manualmente ou pelo evento `repository_dispatch` do tipo `dashboard_refresh`, gera `public/data.json` em memória do runner e publica o diretório `public` no GitHub Pages.
+O workflow está configurado para rodar a cada hora, no minuto 17, e também pode ser acionado manualmente ou pelo evento `repository_dispatch` do tipo `dashboard_refresh`. Ele gera `public/data.json` em memória do runner e publica o diretório `public` no GitHub Pages.
 
 ## Execução local
 
