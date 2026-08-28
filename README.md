@@ -31,6 +31,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - Leads e vendas que não cruzam com nenhuma campanha do gerenciador são orgânicos, inclusive entradas com UTMs como `bio`, `story` e `dm`. Quando o `Sub ID 1` identifica o expert, entram na aba dele como `Orgânico` e passam a compor seu CPL/CAC; os demais permanecem na aba geral `Orgânico`.
 - A aba `Orgânico` consolida todos os registros orgânicos e mostra leads e vendas separados por expert, sem duplicá-los no total da Money Labs.
 - Os cards separam `Vendas global` (tráfego + orgânico) de `Vendas tráfego`; `CAC global` usa todas as vendas e `CAC tráfego` usa somente vendas atribuídas ao tráfego pago.
+- A conversão `LP → Lead` usa exclusivamente leads atribuídos ao tráfego pago; leads orgânicos e UTMs não cruzadas não entram nessa taxa.
 - Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
 
