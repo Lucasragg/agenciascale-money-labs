@@ -32,7 +32,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A aba `Orgânico` consolida todos os registros orgânicos e mostra leads e vendas separados por expert, sem duplicá-los no total da Money Labs.
 - Os cards separam `Vendas global` (tráfego + orgânico) de `Vendas tráfego`; `CAC global` usa todas as vendas e `CAC tráfego` usa somente vendas atribuídas ao tráfego pago.
 - A conversão `LP → Lead` usa exclusivamente leads atribuídos ao tráfego pago; leads orgânicos e UTMs não cruzadas não entram nessa taxa.
-- As tabelas de decisão de mídia por campanha, conjunto e anúncio exibem e permitem ordenar `Conversão LP / lead` e `Conversão em vendas`, ambas calculadas somente com resultados de tráfego pago.
+- As tabelas de decisão de mídia por campanha, conjunto e anúncio exibem e permitem ordenar `Connect Rate`, `Conversão LP / lead` e `Conversão em vendas`, calculadas com resultados de tráfego pago.
 - Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
 
