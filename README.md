@@ -15,6 +15,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A aba `Lucas` também aceita campanhas `Lucas | PT-BR | LEADS`.
 - A aba `Matheus` usa campanhas `MATHEUS | E2-CAP` e `Matheus | PT-BR | LEADS`.
 - A aba `Gabi` mantém as campanhas em espanhol (`GABI | E2-CAP` e `Gabriela | ES`), enquanto a aba `Gabi PT-BR` reúne as campanhas `Gabriela | PT-BR | PURCHASE`; linhas da fonte `Bubba` são convertidas de BRL para USD por R$ 5,10, enquanto `MoneyLabs Dolar` permanece em USD.
+- A aba `Miki` reúne campanhas `MIKI | PURCHASE`; entradas sem atribuição paga com `Sub ID 1 = miki` entram como orgânico da expert.
 - A aba `Nick` usa campanhas cujo nome contenha `Nick | EN | LEADS` e converte o investimento da fonte `Bubba` de BRL para USD por R$ 5,10.
 - A aba `Bubba` também aceita campanhas `Buba | PT-BR | LEADS` quando há correspondência exata com o gerenciador; as linhas dessa campanha na fonte `MoneyLabs Dolar` permanecem em USD.
 - O seletor global de período inclui os atalhos `Hoje` e `Ontem`, além de 7, 14, 30 dias e todo o histórico.
