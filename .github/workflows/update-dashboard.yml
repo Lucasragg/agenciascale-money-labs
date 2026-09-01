@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
+        with:
+          # Even when an older workflow run is re-run, always build the latest
+          # dashboard source so removed/added expert tabs cannot regress.
+          ref: main
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
