@@ -9,6 +9,7 @@ import json
 import re
 import time
 import unicodedata
+import urllib.parse
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -75,7 +76,16 @@ def fetch(url: str, attempts: int = 4) -> bytes:
     error = None
     for attempt in range(attempts):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 MoneyLabsDashboard/1.0"})
+            separator = "&" if urllib.parse.urlsplit(url).query else "?"
+            fresh_url = f"{url}{separator}_cb={time.time_ns()}"
+            req = urllib.request.Request(
+                fresh_url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 MoneyLabsDashboard/1.0",
+                    "Cache-Control": "no-cache, no-store, max-age=0",
+                    "Pragma": "no-cache",
+                },
+            )
             with urllib.request.urlopen(req, timeout=90) as response:
                 return response.read()
         except Exception as exc:  # network retries belong at the integration boundary
