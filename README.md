@@ -6,6 +6,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 
 ## Regras de cálculo
 
+- As abas `Quiz001`, `VSL001` e `TSL001` isolam, respectivamente, as contas `1691211848672749`, `1397186812444496` e `1119682080210000`. O Account ID exato tem prioridade; como o CSV atual do Google omite dois desses IDs e arredonda o terceiro, as nomenclaturas exclusivas `QUIZ001`, `VSL001` e `TSL001` são usadas como fallback seguro.
 - A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP`, `BUBA | E2-CAP`, `Buba | PT-BR | LEADS` ou `Buba | PT-BR | PUR`; a campanha exata `[LEADS][ABO]` também entra porque utiliza criativos Buba e possui cruzamento exato na VMFY.
 - A aba `Buba-EN` concentra exclusivamente as campanhas da Buba cujo nome contenha `BUBA-ING`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP` ou `Mari | PT-BR | LEADS`.
