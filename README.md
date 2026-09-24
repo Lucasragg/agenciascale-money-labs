@@ -29,7 +29,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - O período inclui o dia atual no fuso `America/Sao_Paulo`.
 - Leads: linhas cujo evento normalizado é exatamente `lead salvo`.
 - Vendas: linhas cuja coluna AA `Tipo de registro` é `APROVAÇÃO DE PLANO`; as colunas antigas `Evento` e `Etapa` não determinam mais a venda.
-- A atribuição prioriza `Ad ID`; depois usa `Campaign ID` e `Ad Set ID`; `UTM Campaign` e `UTM Content` permanecem como fallback para linhas antigas sem IDs.
+- A atribuição prioriza `Ad ID`; depois usa `Ad Set ID` e `Campaign ID`. Para linhas antigas sem IDs, também cruza nomes únicos de anúncio e conjunto, além de `UTM Campaign` e `UTM Content`; correspondências ambíguas nunca são atribuídas automaticamente.
 - Vendas são atribuídas exclusivamente pela UTM presente na própria linha; não há fallback por e-mail.
 - Leads e vendas que não cruzam com nenhuma campanha do gerenciador são orgânicos, inclusive entradas com UTMs como `bio`, `story` e `dm`. Quando o `Sub ID 1` identifica o expert, entram na aba dele como `Orgânico` e passam a compor seu CPL/CAC; os demais permanecem na aba geral `Orgânico`.
 - A aba `Orgânico` consolida todos os registros orgânicos e mostra leads e vendas separados por expert, sem duplicá-los no total da Money Labs.
