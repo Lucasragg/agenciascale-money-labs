@@ -221,12 +221,14 @@ def main() -> None:
             mariane_campaign_names.add(norm(campaign))
 
     ads: list[dict[str, object]] = []
-    campaign_names: dict[str, tuple[str, str]] = {}
+    campaign_names: dict[str, set[tuple[str, str]]] = defaultdict(set)
     adset_by_campaign_ad: dict[tuple[str, str], set[str]] = defaultdict(set)
     adsets_by_campaign: dict[str, set[str]] = defaultdict(set)
     campaigns_by_id: dict[str, set[tuple[str, str]]] = defaultdict(set)
     adsets_by_id: dict[str, set[tuple[str, str, str]]] = defaultdict(set)
     ads_by_id: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
+    adsets_by_name: dict[str, set[tuple[str, str, str]]] = defaultdict(set)
+    ads_by_name: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
     for row, source_tab, source_currency in ads_source:
         date = parse_date(get(row, "Day", "Dia", "Date"))
         campaign = get(row, "Campaign Name", "Campanha")
@@ -254,7 +256,7 @@ def main() -> None:
         }
         ads.append(item)
         ckey, akey = norm(campaign), norm(ad)
-        campaign_names[ckey] = (view, campaign)
+        campaign_names[ckey].add((view, campaign))
         adset_by_campaign_ad[(ckey, akey)].add(item["adset"])
         adsets_by_campaign[ckey].add(item["adset"])
         campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
@@ -266,6 +268,10 @@ def main() -> None:
             adsets_by_id[adset_id].add((view, campaign, item["adset"]))
         if ad_id:
             ads_by_id[ad_id].add((view, campaign, item["adset"], item["ad"]))
+        if adset:
+            adsets_by_name[norm(adset)].add((view, campaign, item["adset"]))
+        if ad:
+            ads_by_name[norm(ad)].add((view, campaign, item["adset"], item["ad"]))
 
     def unique(mapping: dict[str, set[tuple]], identifier: object) -> tuple | None:
         values = mapping.get(clean_id(identifier), set())
@@ -274,19 +280,33 @@ def main() -> None:
     def resolve_utm(row: dict[str, str]) -> tuple[str, str, str, str, str] | None:
         campaign = get(row, "UTM Campaign")
         ad = get(row, "UTM Content")
+        adset = get(row, "UTM Term") or row.get("", "")
         ckey, akey = norm(campaign), norm(ad)
-        ad_match = unique(ads_by_id, get(row, "Ad ID")) or unique(ads_by_id, ad)
+        ad_match = unique(ads_by_id, get(row, "Ad ID")) or unique(ads_by_id, ad) or unique(ads_by_name, ad)
         if ad_match:
-            return (*ad_match, "ad_id")
+            method = "ad_id" if clean_id(get(row, "Ad ID")) or clean_id(ad) in ads_by_id else "ad_name"
+            return (*ad_match, method)
+
+        adset_match = (
+            unique(adsets_by_id, get(row, "Ad Set ID"))
+            or unique(adsets_by_id, adset)
+            or unique(adsets_by_name, adset)
+        )
 
         campaign_match = unique(campaigns_by_id, get(row, "Campaign ID")) or unique(campaigns_by_id, campaign)
-        if not campaign_match and ckey in campaign_names:
-            campaign_match = campaign_names[ckey]
+        if not campaign_match:
+            campaign_match = unique(campaign_names, ckey)
+        if not campaign_match and adset_match:
+            view, campaign_name, resolved_adset = adset_match
+            canonical_ckey = norm(campaign_name)
+            known_ad = resolved_adset in adset_by_campaign_ad.get((canonical_ckey, akey), set())
+            resolved_ad = ad.strip() if known_ad else "Não atribuído"
+            method = "adset_id" if clean_id(get(row, "Ad Set ID")) or clean_id(adset) in adsets_by_id else "adset_name"
+            return view, campaign_name, resolved_adset, resolved_ad, method
         if not campaign_match:
             return None
         view, campaign_name = campaign_match
         canonical_ckey = norm(campaign_name)
-        adset_match = unique(adsets_by_id, get(row, "Ad Set ID"))
         if adset_match and (adset_match[0], adset_match[1]) != (view, campaign_name):
             adset_match = None
         sets = adset_by_campaign_ad.get((canonical_ckey, akey), set())
@@ -345,7 +365,7 @@ def main() -> None:
                 source_counts["organicExpertMatchedLeads" if kind == "lead" else "organicExpertMatchedSales"] += 1
             else:
                 source_counts["organicUnassignedLeads" if kind == "lead" else "organicUnassignedSales"] += 1
-        elif method != "utm_name":
+        elif method.endswith("_id"):
             source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
     dates = [str(row["date"]) for row in ads] + [str(row["date"]) for row in prepared]
