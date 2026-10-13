@@ -46,6 +46,12 @@ ACCOUNT_VIEWS = {
     "1397186812444496": "VSL001",
     "1119682080210000": "TSL001",
 }
+BUBBA_CAMPAIGN_ID_OVERRIDES = {
+    "120250118910510328",  # QUIZ001 | PT, iniciado em 2026-10-05
+    "120250118986080328",  # QUIZ001 | US, iniciado em 2026-10-05
+    "120250263727980328",  # VSL001 | PT - Teste AN, iniciado em 2026-10-13
+    "120250263735790328",  # VSL001 | US - Teste AN, iniciado em 2026-10-13
+}
 CAMPAIGN_VIEWS = {
     "Quiz001": ("| quiz001 |",),
     "VSL001": ("| vsl001 |",),
@@ -235,8 +241,9 @@ def main() -> None:
         adset = get(row, "Ad Set Name", "Conjunto de anúncios")
         ad = get(row, "Ad Name", "Anúncio")
         campaign_key = norm(campaign)
+        campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
         account_id = clean_id(get(row, "Account ID", "Ad Account ID", "ID da conta"))
-        view = ACCOUNT_VIEWS.get(account_id) or campaign_view(campaign) or ("Mari" if campaign_key in mariane_campaign_names else None)
+        view = "Bubba" if campaign_id in BUBBA_CAMPAIGN_ID_OVERRIDES else ACCOUNT_VIEWS.get(account_id) or campaign_view(campaign) or ("Mari" if campaign_key in mariane_campaign_names else None)
         if not date or not campaign or date > cutoff_date or not view:
             continue
         raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
@@ -259,7 +266,6 @@ def main() -> None:
         campaign_names[ckey].add((view, campaign))
         adset_by_campaign_ad[(ckey, akey)].add(item["adset"])
         adsets_by_campaign[ckey].add(item["adset"])
-        campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
         adset_id = clean_id(get(row, "Ad Set ID", "ID do conjunto de anúncios"))
         ad_id = clean_id(get(row, "Ad ID", "ID do anúncio"))
         if campaign_id:
@@ -380,7 +386,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Quiz001": ["Account ID: 1691211848672749", "Campanhas com QUIZ001"], "VSL001": ["Account ID: 1397186812444496", "Campanhas com VSL001"], "TSL001": ["Account ID: 1119682080210000", "Campanhas com TSL001"], "Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "[LEADS][ABO]", "Orgânico por Sub ID 1: buba"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Gabi PT-BR": ["Gabriela | PT-BR | PURCHASE"], "Miki": ["MIKI | PURCHASE", "Orgânico por Sub ID 1: miki"], "Giovanna": ["Giovanna | PT-BR | PURCHASE", "Orgânico por Sub ID 1: giovanna-vilarubia"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
+        "campaignFilters": {"Quiz001": ["Account ID: 1691211848672749", "Campanhas históricas com QUIZ001"], "VSL001": ["Account ID: 1397186812444496", "Campanhas históricas com VSL001"], "TSL001": ["Account ID: 1119682080210000", "Campanhas com TSL001"], "Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "QUIZ001 novos desde 05/10", "VSL001 novos desde 13/10", "[LEADS][ABO]", "Orgânico por Sub ID 1: buba"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Gabi PT-BR": ["Gabriela | PT-BR | PURCHASE"], "Miki": ["MIKI | PURCHASE", "Orgânico por Sub ID 1: miki"], "Giovanna": ["Giovanna | PT-BR | PURCHASE", "Orgânico por Sub ID 1: giovanna-vilarubia"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
