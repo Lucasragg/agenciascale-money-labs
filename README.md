@@ -36,6 +36,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - Os cards separam `Vendas global` (tráfego + orgânico) de `Vendas tráfego`; `CAC global` usa todas as vendas e `CAC tráfego` usa somente vendas atribuídas ao tráfego pago.
 - A conversão `LP → Lead` usa exclusivamente leads atribuídos ao tráfego pago; leads orgânicos e UTMs não cruzadas não entram nessa taxa.
 - As tabelas de decisão de mídia por campanha, conjunto e anúncio exibem e permitem ordenar `Connect Rate`, `Conversão LP / lead` e `Conversão em vendas`, calculadas com resultados de tráfego pago.
+- No gráfico de eficiência, o nome de cada coluna de métrica seleciona ou remove sua série diária; várias métricas podem ser comparadas ao mesmo tempo, e o botão de ordenação ao lado mantém a ordenação independente da seleção do gráfico.
 - Receita e ROAS não são publicados.
 - O arquivo público não contém nome, e-mail nem telefone.
 
