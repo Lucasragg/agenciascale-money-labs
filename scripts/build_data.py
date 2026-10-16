@@ -55,7 +55,7 @@ BUBBA_CAMPAIGN_ID_OVERRIDES = {
 CAMPAIGN_VIEWS = {
     "Bubba": ("sd | e2-cap", "bubba | e2-cap", "buba | e2-cap", "buba | pt-br |", "| quiz001 |", "| vsl001 |", "| tsl001 |"),
     "Buba-EN": ("buba-ing", "buba | en | purchase"),
-    "Mari": ("mari | e2-cap", "mari | pt-br | leads", "mari | pt-pt | purchase"),
+    "Mari": ("mari | e2-cap", "mari | pt-br | leads", "mari | pt-br | purchase", "mari | pt-pt | purchase"),
     "Harumi": ("harumi | e2-cap", "harumi | purchase"),
     "Lucas": ("lucas | e2-cap", "lucas | pt-br | leads", "lucas | pt-br | purchase"),
     "Alice": ("alice | e2-cap", "alice | pt-br | leads", "alice | pt-br | purchase"),
@@ -124,6 +124,10 @@ def campaign_view(campaign: object) -> str | None:
     campaign_key = norm(campaign)
     if campaign_key in EXACT_CAMPAIGN_VIEWS:
         return EXACT_CAMPAIGN_VIEWS[campaign_key]
+    # Expert-qualified campaign names take precedence over generic structure
+    # markers such as VSL001, which are also used by Bubba campaigns.
+    if campaign_key.startswith("mari | pt-br | purchase"):
+        return "Mari"
     return next((name for name, markers in CAMPAIGN_VIEWS.items() if any(marker in campaign_key for marker in markers)), None)
 
 
@@ -383,7 +387,7 @@ def main() -> None:
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
-        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "QUIZ001", "VSL001", "TSL001", "[LEADS][ABO]", "Contas 1691211848672749, 1397186812444496 e 1119682080210000", "Orgânico por Sub ID 1: buba"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Gabi PT-BR": ["Gabriela | PT-BR | PURCHASE"], "Miki": ["MIKI | PURCHASE", "Orgânico por Sub ID 1: miki"], "Giovanna": ["Giovanna | PT-BR | PURCHASE", "Orgânico por Sub ID 1: giovanna-vilarubia"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
+        "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "QUIZ001", "VSL001", "TSL001", "[LEADS][ABO]", "Contas 1691211848672749, 1397186812444496 e 1119682080210000", "Orgânico por Sub ID 1: buba"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-BR | PURCHASE", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Gabi PT-BR": ["Gabriela | PT-BR | PURCHASE"], "Miki": ["MIKI | PURCHASE", "Orgânico por Sub ID 1: miki"], "Giovanna": ["Giovanna | PT-BR | PURCHASE", "Orgânico por Sub ID 1: giovanna-vilarubia"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
         "cutoffDate": cutoff_date,
         "range": {"min": min(dates) if dates else None, "max": max(dates) if dates else None},
         "sourceCounts": {**source_counts, "adRows": len(ads), "mediaRowsByTab": {name: sum(1 for row in ads if row["sourceTab"] == name) for name, _, _ in ADS_SOURCES}},
