@@ -83,6 +83,24 @@ EXACT_CAMPAIGN_VIEWS = {
     "[pt][lead][teste-lps] — copia": "Mari",
 }
 ROOT = Path(__file__).resolve().parents[1]
+HISTORICAL_BASELINE_PATH = ROOT / "data" / "historical-baseline-through-2026-10-16.json"
+
+
+def load_historical_baseline() -> tuple[str, str, list[dict[str, object]], list[dict[str, object]]]:
+    """Load the immutable last-known-good history used to survive source data loss."""
+    if not HISTORICAL_BASELINE_PATH.is_file():
+        raise RuntimeError(f"Baseline histórico obrigatório não encontrado: {HISTORICAL_BASELINE_PATH}")
+    try:
+        baseline = json.loads(HISTORICAL_BASELINE_PATH.read_text(encoding="utf-8"))
+        cutoff = str(baseline["cutoffDate"])
+        snapshot_generated_at = str(baseline["snapshotGeneratedAt"])
+        ads = list(baseline["ads"])
+        events = list(baseline["events"])
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Baseline histórico inválido: {HISTORICAL_BASELINE_PATH}") from exc
+    if not cutoff or any(str(row.get("date", "")) > cutoff for row in [*ads, *events]):
+        raise RuntimeError("O baseline histórico contém datas posteriores ao corte declarado.")
+    return cutoff, snapshot_generated_at, ads, events
 
 
 def fetch(url: str, attempts: int = 4) -> bytes:
@@ -183,6 +201,7 @@ def clean_id(value: object) -> str:
 
 
 def main() -> None:
+    historical_cutoff, baseline_generated_at, baseline_ads, baseline_events = load_historical_baseline()
     ads_sources = [(name, currency, decode_csv(fetch(url))) for name, currency, url in ADS_SOURCES]
     ads_source = [(row, name, currency) for name, currency, rows in ads_sources for row in rows]
     events_source = decode_csv(fetch(EVENTS_URL))
@@ -236,6 +255,32 @@ def main() -> None:
     ads_by_id: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
     adsets_by_name: dict[str, set[tuple[str, str, str]]] = defaultdict(set)
     ads_by_name: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
+
+    def index_ad(item: dict[str, object], campaign_id: str = "", adset_id: str = "", ad_id: str = "") -> None:
+        view = str(item["view"])
+        campaign = str(item["campaign"])
+        adset = str(item["adset"])
+        ad = str(item["ad"])
+        ckey, akey = norm(campaign), norm(ad)
+        campaign_names[ckey].add((view, campaign))
+        adset_by_campaign_ad[(ckey, akey)].add(adset)
+        adsets_by_campaign[ckey].add(adset)
+        if campaign_id:
+            campaigns_by_id[campaign_id].add((view, campaign))
+        if adset_id:
+            adsets_by_id[adset_id].add((view, campaign, adset))
+        if ad_id:
+            ads_by_id[ad_id].add((view, campaign, adset, ad))
+        if adset and adset != "Sem conjunto":
+            adsets_by_name[norm(adset)].add((view, campaign, adset))
+        if ad and ad != "Sem anúncio":
+            ads_by_name[norm(ad)].add((view, campaign, adset, ad))
+
+    for historical_ad in baseline_ads:
+        item = dict(historical_ad)
+        ads.append(item)
+        index_ad(item)
+
     for row, source_tab, source_currency in ads_source:
         date = parse_date(get(row, "Day", "Dia", "Date"))
         campaign = get(row, "Campaign Name", "Campanha")
@@ -245,7 +290,7 @@ def main() -> None:
         campaign_id = clean_id(get(row, "Campaign ID", "ID da campanha"))
         account_id = clean_id(get(row, "Account ID", "Ad Account ID", "ID da conta"))
         view = "Bubba" if campaign_id in BUBBA_CAMPAIGN_ID_OVERRIDES else ACCOUNT_VIEWS.get(account_id) or campaign_view(campaign) or ("Mari" if campaign_key in mariane_campaign_names else None)
-        if not date or not campaign or date > cutoff_date or not view:
+        if not date or not campaign or date <= historical_cutoff or date > cutoff_date or not view:
             continue
         raw_spend = parse_number(get(row, "Amount Spent", "Valor gasto"))
         spend_usd = raw_spend if source_currency == "USD" else raw_spend / BRL_PER_USD
@@ -263,22 +308,9 @@ def main() -> None:
             "pageViews": int(parse_number(get(row, "Landing Page Views", "Visualizações da página de destino"))),
         }
         ads.append(item)
-        ckey, akey = norm(campaign), norm(ad)
-        campaign_names[ckey].add((view, campaign))
-        adset_by_campaign_ad[(ckey, akey)].add(item["adset"])
-        adsets_by_campaign[ckey].add(item["adset"])
         adset_id = clean_id(get(row, "Ad Set ID", "ID do conjunto de anúncios"))
         ad_id = clean_id(get(row, "Ad ID", "ID do anúncio"))
-        if campaign_id:
-            campaigns_by_id[campaign_id].add((view, campaign))
-        if adset_id:
-            adsets_by_id[adset_id].add((view, campaign, item["adset"]))
-        if ad_id:
-            ads_by_id[ad_id].add((view, campaign, item["adset"], item["ad"]))
-        if adset:
-            adsets_by_name[norm(adset)].add((view, campaign, item["adset"]))
-        if ad:
-            ads_by_name[norm(ad)].add((view, campaign, item["adset"], item["ad"]))
+        index_ad(item, campaign_id, adset_id, ad_id)
 
     def unique(mapping: dict[str, set[tuple]], identifier: object) -> tuple | None:
         values = mapping.get(clean_id(identifier), set())
@@ -330,7 +362,7 @@ def main() -> None:
         method = "campaign_id" if clean_id(get(row, "Campaign ID")) or clean_id(campaign) in campaigns_by_id else "utm_name"
         return view, campaign_name, adset, resolved_ad, method
 
-    prepared: list[dict[str, object]] = []
+    prepared_live: list[dict[str, object]] = []
     source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "organicExpertMatchedLeads": 0, "organicExpertMatchedSales": 0, "organicUnassignedLeads": 0, "organicUnassignedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
     for row in events_source:
         event = norm(get(row, "Evento"))
@@ -355,7 +387,7 @@ def main() -> None:
             expert_view = ORGANIC_EXPERT_VIEWS.get(norm(get(row, "Sub ID 1")))
             resolved = (expert_view or "Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic_expert" if expert_view else "organic")
         view, campaign, adset, ad, method = resolved
-        prepared.append({
+        prepared_live.append({
             "date": date,
             "view": view,
             "type": kind,
@@ -375,6 +407,9 @@ def main() -> None:
         elif method.endswith("_id"):
             source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
+    prepared = [dict(row) for row in baseline_events]
+    prepared.extend(row for row in prepared_live if str(row["date"]) > historical_cutoff)
+
     dates = [str(row["date"]) for row in ads] + [str(row["date"]) for row in prepared]
     output = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -384,6 +419,7 @@ def main() -> None:
         "reportingTimezone": "America/Los_Angeles",
         "mediaTimezone": "America/Los_Angeles",
         "eventsSourceTimezone": "America/Sao_Paulo",
+        "historicalBaseline": {"enabled": True, "cutoffDate": historical_cutoff, "snapshotGeneratedAt": baseline_generated_at},
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
         "views": list(CAMPAIGN_VIEWS),
