@@ -45,6 +45,10 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 
 O workflow tem disparos redundantes nos minutos 07 e 37 de cada hora para reduzir lacunas do agendador nativo do GitHub. Também pode ser acionado manualmente ou pelo evento `repository_dispatch` do tipo `dashboard_refresh`. Ele gera `public/data.json` em memória do runner e publica o diretório `public` no GitHub Pages.
 
+## Proteção do histórico
+
+O arquivo `data/historical-baseline-through-2026-10-16.json` preserva o último snapshot comprovadamente íntegro dos anúncios e eventos até 16/10/2026. Em cada atualização, o build mantém esse histórico imutável e acrescenta somente dados posteriores vindos das planilhas. Se o arquivo de proteção estiver ausente ou inválido, o build falha em vez de publicar uma dashboard que apague o histórico.
+
 ## Execução local
 
 ```bash
