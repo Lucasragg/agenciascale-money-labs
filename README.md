@@ -9,6 +9,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - As estruturas `Quiz001`, `VSL001` e `TSL001`, incluindo as contas `1691211848672749`, `1397186812444496` e `1119682080210000`, são consolidadas na aba `Bubba`. O Account ID exato tem prioridade e as nomenclaturas exclusivas são usadas como fallback seguro quando o CSV omite ou arredonda o ID.
 - A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP`, `BUBA | E2-CAP`, `Buba | PT-BR | LEADS`, `Buba | PT-BR | PUR`, `QUIZ001`, `VSL001` ou `TSL001`; a campanha exata `[LEADS][ABO]` também entra porque utiliza criativos Buba e possui cruzamento exato na VMFY.
 - A aba `LIVE001` reúne exclusivamente as campanhas cujo nome contenha `LIVE001`. Essa regra tem prioridade sobre o Account ID e impede que o novo funil seja misturado à aba `Bubba`.
+- Como o funil `LIVE001` leva o visitante da landing page diretamente ao checkout, sua aba não exibe métricas de lead. Ela usa `Checkouts Initiated` do gerenciador para mostrar Initiate Checkout, custo por checkout, conversão LP → checkout e conversão checkout → venda.
 - A aba `Buba-EN` concentra exclusivamente as campanhas da Buba cujo nome contenha `BUBA-ING`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP`, `Mari | PT-BR | LEADS`, `Mari | PT-BR | PURCHASE` ou `Mari | PT-PT | PURCHASE`. O prefixo da expert tem prioridade sobre marcadores de estrutura compartilhados, como `VSL001`.
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
