@@ -309,6 +309,7 @@ def main() -> None:
             "impressions": int(parse_number(get(row, "Impressions", "Impressões"))),
             "clicks": int(parse_number(get(row, "Link Clicks", "Cliques no link"))),
             "pageViews": int(parse_number(get(row, "Landing Page Views", "Visualizações da página de destino"))),
+            "initiateCheckouts": int(parse_number(get(row, "Checkouts Initiated", "Initiate Checkout", "Initiated Checkouts", "Finalizações de compra iniciadas"))),
         }
         ads.append(item)
         adset_id = clean_id(get(row, "Ad Set ID", "ID do conjunto de anúncios"))
