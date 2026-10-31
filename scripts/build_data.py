@@ -39,6 +39,11 @@ EVENTS_URL = (
     "?tqx=out:csv&gid=0&headers=1"
     "&tq=select%20A%2CB%2CJ%2CK%2CL%2CM%2CN%2CS%2CAA%2CAF%2CAG%2CAH"
 )
+LIVE_SALES_URL = (
+    "https://docs.google.com/spreadsheets/d/"
+    "1DmGXEvfbS1_324K3PIadyP3kv1tBDqkC6NaCWw_2KfE/gviz/tq"
+    "?tqx=out:csv&sheet=Vendas%20Webin%C3%A1rio%20e%20Upsell&headers=1"
+)
 TAX_MULTIPLIER = 1.0
 BRL_PER_USD = 5.10
 ACCOUNT_VIEWS = {
@@ -206,12 +211,17 @@ def main() -> None:
     ads_sources = [(name, currency, decode_csv(fetch(url))) for name, currency, url in ADS_SOURCES]
     ads_source = [(row, name, currency) for name, currency, rows in ads_sources for row in rows]
     events_source = decode_csv(fetch(EVENTS_URL))
-    if any(not rows for _, _, rows in ads_sources) or not events_source:
+    live_sales_source = decode_csv(fetch(LIVE_SALES_URL))
+    if any(not rows for _, _, rows in ads_sources) or not events_source or not live_sales_source:
         raise RuntimeError("Uma das planilhas não retornou linhas de dados.")
     required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "Tipo de registro", "UTM Campaign", "UTM Content")}
     if not required.issubset({norm(x) for x in events_source[0].keys()}):
         observed = ", ".join(events_source[0].keys())
         raise RuntimeError(f"Cabeçalhos esperados não encontrados na planilha VMFY SHEETS. Recebidos: {observed}")
+    live_sales_required = {norm(x) for x in ("Data/hora (Brasília)", "Evento", "UTM Campaign", "UTM Term", "UTM Content", "Event ID")}
+    if not live_sales_required.issubset({norm(x) for x in live_sales_source[0].keys()}):
+        observed = ", ".join(live_sales_source[0].keys())
+        raise RuntimeError(f"Cabeçalhos esperados não encontrados na aba Vendas Webinário e Upsell. Recebidos: {observed}")
 
     cutoff_date = datetime.now(ZoneInfo("America/Los_Angeles")).date().isoformat()
     mariane_campaign_ids: set[str] = set()
@@ -367,7 +377,7 @@ def main() -> None:
         return view, campaign_name, adset, resolved_ad, method
 
     prepared_live: list[dict[str, object]] = []
-    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "organicExpertMatchedLeads": 0, "organicExpertMatchedSales": 0, "organicUnassignedLeads": 0, "organicUnassignedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0}
+    source_counts = {"leadRows": 0, "saleRows": 0, "matchedLeads": 0, "matchedSales": 0, "idMatchedLeads": 0, "idMatchedSales": 0, "organicLeads": 0, "organicSales": 0, "organicExpertMatchedLeads": 0, "organicExpertMatchedSales": 0, "organicUnassignedLeads": 0, "organicUnassignedSales": 0, "timezoneShiftedLeads": 0, "timezoneShiftedSales": 0, "liveSalesRows": 0, "matchedLiveSales": 0, "unmatchedLiveSales": 0, "duplicateLiveSales": 0}
     for row in events_source:
         event = norm(get(row, "Evento"))
         record_type = norm(get(row, "Tipo de registro"))
@@ -376,6 +386,8 @@ def main() -> None:
         elif event == "lead salvo":
             kind = "lead"
         else:
+            continue
+        if kind == "sale" and "live001" in norm(get(row, "UTM Campaign")):
             continue
         source_counts["leadRows" if kind == "lead" else "saleRows"] += 1
         timestamp = get(row, "Data/hora (Brasília)")
@@ -391,6 +403,10 @@ def main() -> None:
             expert_view = ORGANIC_EXPERT_VIEWS.get(norm(get(row, "Sub ID 1")))
             resolved = (expert_view or "Orgânico", "Orgânico", "Orgânico", "Orgânico", "organic_expert" if expert_view else "organic")
         view, campaign, adset, ad, method = resolved
+        # LIVE001 sales have a dedicated source tab. Ignore any copy that may
+        # later appear in the main VMFY tab so the purchase is never doubled.
+        if kind == "sale" and view == "LIVE001":
+            continue
         prepared_live.append({
             "date": date,
             "view": view,
@@ -411,6 +427,44 @@ def main() -> None:
         elif method.endswith("_id"):
             source_counts["idMatchedLeads" if kind == "lead" else "idMatchedSales"] += 1
 
+    seen_live_sale_ids: set[str] = set()
+    for row in live_sales_source:
+        event_id = get(row, "Event ID")
+        if "purchase_approved" not in norm(event_id) or "live001" not in norm(get(row, "UTM Campaign")):
+            continue
+        source_counts["saleRows"] += 1
+        source_counts["liveSalesRows"] += 1
+        if event_id in seen_live_sale_ids:
+            source_counts["duplicateLiveSales"] += 1
+            continue
+        seen_live_sale_ids.add(event_id)
+        timestamp = get(row, "Data/hora (Brasília)")
+        source_date = parse_date(timestamp)
+        date = parse_event_date_pacific(timestamp)
+        if date and source_date and date != source_date:
+            source_counts["timezoneShiftedSales"] += 1
+        if not date or date > cutoff_date:
+            continue
+        resolved = resolve_utm(row)
+        if not resolved or resolved[0] != "LIVE001":
+            source_counts["unmatchedLiveSales"] += 1
+            continue
+        view, campaign, adset, ad, method = resolved
+        prepared_live.append({
+            "date": date,
+            "view": view,
+            "type": "sale",
+            "campaign": campaign,
+            "adset": adset,
+            "ad": ad,
+            "channel": "paid",
+            "expert": view,
+        })
+        source_counts["matchedSales"] += 1
+        source_counts["matchedLiveSales"] += 1
+        if method.endswith("_id"):
+            source_counts["idMatchedSales"] += 1
+
     prepared = [dict(row) for row in baseline_events]
     prepared.extend(row for row in prepared_live if str(row["date"]) > historical_cutoff)
 
@@ -426,6 +480,7 @@ def main() -> None:
         "historicalBaseline": {"enabled": True, "cutoffDate": historical_cutoff, "snapshotGeneratedAt": baseline_generated_at},
         "brlPerUsd": BRL_PER_USD,
         "mediaSources": {"Bubba": {"currency": "BRL", "conversion": "Amount Spent / 5.10"}, "MoneyLabs Dolar": {"currency": "USD", "conversion": "Amount Spent"}},
+        "eventSources": {"default": "VMFY SHEETS", "LIVE001Sales": "Vendas Webinário e Upsell"},
         "views": list(CAMPAIGN_VIEWS),
         "campaignFilters": {"Bubba": ["SD | E2-CAP", "BUBBA | E2-CAP", "BUBA | E2-CAP", "Buba | PT-BR", "QUIZ001", "VSL001", "TSL001", "[LEADS][ABO]", "Contas 1691211848672749, 1397186812444496 e 1119682080210000", "Orgânico por Sub ID 1: buba"], "LIVE001": ["Campanhas cujo nome contém LIVE001"], "Buba-EN": ["BUBA-ING", "Buba | EN | PURCHASE"], "Mari": ["MARI | E2-CAP", "Mari | PT-BR | LEADS", "Mari | PT-BR | PURCHASE", "Mari | PT-PT | PURCHASE", "Sub ID 1: mariane-paula", "Orgânico por Sub ID 1: mariane-paula"], "Harumi": ["Harumi | E2-CAP", "Harumi | PURCHASE"], "Lucas": ["Lucas | E2-CAP", "Lucas | PT-BR | LEADS", "Lucas | PT-BR | PURCHASE", "Orgânico por Sub ID 1: lucas-neves"], "Alice": ["Alice | E2-CAP", "Alice | PT-BR | LEADS", "Alice | PT-BR | PURCHASE"], "Matheus": ["MATHEUS | E2-CAP", "Matheus | PT-BR | LEADS", "Matheus | PT-BR | PURCHASE"], "Gabi": ["GABI | E2-CAP", "GABI | ES | LEAD", "GABI | ES | PUR", "Gabriela | ES | LEADS", "Gabriela | ES | PURCHASE", "Orgânico por Sub ID 1: gabrielereina"], "Gabi PT-BR": ["Gabriela | PT-BR | PURCHASE"], "Miki": ["MIKI | PURCHASE", "Orgânico por Sub ID 1: miki"], "Giovanna": ["Giovanna | PT-BR | PURCHASE", "Orgânico por Sub ID 1: giovanna-vilarubia"], "Nick": ["Nick | EN | LEADS"], "Orgânico": ["Sem UTMs e sem expert identificado no Sub ID 1"]},
         "cutoffDate": cutoff_date,
