@@ -10,6 +10,7 @@ As vendas são identificadas pela coluna `Tipo de registro` (AA) com o valor nor
 - A aba `Bubba` usa campanhas em português cujo nome contenha `SD | E2-CAP`, `BUBBA | E2-CAP`, `BUBA | E2-CAP`, `Buba | PT-BR | LEADS`, `Buba | PT-BR | PUR`, `QUIZ001`, `VSL001` ou `TSL001`; a campanha exata `[LEADS][ABO]` também entra porque utiliza criativos Buba e possui cruzamento exato na VMFY.
 - A aba `LIVE001` reúne exclusivamente as campanhas cujo nome contenha `LIVE001`. Essa regra tem prioridade sobre o Account ID e impede que o novo funil seja misturado à aba `Bubba`.
 - Como o funil `LIVE001` leva o visitante da landing page diretamente ao checkout, sua aba não exibe métricas de lead. Ela usa `Checkouts Initiated` do gerenciador para mostrar Initiate Checkout, custo por checkout, conversão LP → checkout e conversão checkout → venda.
+- As vendas `LIVE001` vêm exclusivamente da aba `Vendas Webinário e Upsell`. Só entram linhas com `Event ID` de compra aprovada e `UTM Campaign` contendo `LIVE001`, cruzadas com campanha, conjunto e anúncio do gerenciador; eventuais cópias na aba principal são ignoradas para evitar duplicidade.
 - A aba `Buba-EN` concentra exclusivamente as campanhas da Buba cujo nome contenha `BUBA-ING`.
 - A aba `Mari` usa campanhas cujo nome contenha `MARI | E2-CAP`, `Mari | PT-BR | LEADS`, `Mari | PT-BR | PURCHASE` ou `Mari | PT-PT | PURCHASE`. O prefixo da expert tem prioridade sobre marcadores de estrutura compartilhados, como `VSL001`.
 - A aba `Harumi` usa campanhas cujo nome contenha `Harumi | E2-CAP`.
